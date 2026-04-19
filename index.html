@@ -121,7 +121,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .detail-subtitle{font-size:12px;color:#9aaabe;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
 
 /* detail: data table */
-.detail-table{width:100%;border-collapse:collapse;table-layout:fixed}
 .detail-table{width:100%;border-collapse:collapse;table-layout:auto}
 .detail-table th{text-align:left;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#9aaec4;
   padding:8px 12px;border-bottom:1px solid #1a1f2e;white-space:nowrap;vertical-align:top}
@@ -1199,7 +1198,6 @@ const GLOSSARY = [
   { term:'ISM band', def:'Industrial, Scientific, Medical — unlicensed frequency bands (e.g. 2.4 GHz, 5.8 GHz)' },
   { term:'Beamforming', def:'Antenna technique focusing signal energy toward specific users using phase arrays' },
   { term:'Massive MIMO', def:'MIMO with 64+ antenna elements (e.g. 64T64R) — key 5G technology for capacity' },
-  { term:'SAN',    def:'Storage Area Network — high-speed network providing block-level data storage access' },
   { term:'BW',     def:'Bandwidth — width of frequency range used by a signal or channel' },
   { term:'FirstNet', def:'US nationwide public safety broadband network on LTE Band 14 (758-768 / 788-798 MHz)' },
   { term:'Repack / Digital dividend', def:'Reclaiming TV broadcast spectrum and reallocating it to mobile broadband' },
@@ -1242,9 +1240,6 @@ const GLOSSARY = [
   { term:'W / mW / μW', def:'Watt / milliwatt / microwatt — power units; transmitter output is typically rated in watts' },
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   APP STATE & HELPERS
-   ═══════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════════
    WELL-KNOWN FREQUENCIES — curated per band, per region
    Key: band id → array of { freq, call, mode, region, desc }
@@ -1728,7 +1723,6 @@ function parseFreqMHz(s) {
   else if (/kHz/i.test(s)) unit = 0.001;
   var lo = parseFloat(nums[0]) * unit;
   var hi = nums.length > 1 ? parseFloat(nums[1]) * unit : lo;
-  if (hi < lo && unit === 1) hi = hi; /* already correct */
   return [lo, hi];
 }
 
@@ -1869,7 +1863,7 @@ function buildAtmoDiagram() {
     svg += '<rect x="65" y="' + y1 + '" width="' + (w-85) + '" height="' + (y2-y1) + '" fill="' + l.color + '" opacity="0.4" rx="2"/>';
     const mid = (y1 + y2) / 2;
     svg += '<text x="75" y="' + (mid+4) + '" fill="' + (lt?'#2a3040':'#d0dce8') + '" font-size="13" font-weight="600">' + l.name + '</text>';
-    svg += '<text x="' + (w-20) + '" y="' + (mid+4) + '" fill="' + (lt?'#3a4558':'#c0ccd8') + '" font-size="11" text-anchor="end">' + l.note + '</text>';;
+    svg += '<text x="' + (w-20) + '" y="' + (mid+4) + '" fill="' + (lt?'#3a4558':'#c0ccd8') + '" font-size="11" text-anchor="end">' + l.note + '</text>';
   });
 
   /* Earth surface */
