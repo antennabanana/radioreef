@@ -1825,72 +1825,169 @@ function openPropagation() {
 /* ── Atmosphere layers diagram (SVG) ──────────────────────── */
 function buildAtmoDiagram() {
   const lt = isLight();
-  const w = 900, h = 400;
-  /* layers: name, bottom altitude (km), top (km), colour, opacity */
+  const w = 900, h = 480;
+
+  /* layer data */
   const layers = [
-    { name:'Troposphere', bot:0, top:12, color:'#2a5a4a', note:'Weather, tropo ducting (VHF/UHF)' },
-    { name:'Stratosphere', bot:12, top:50, color:'#2a4a6a', note:'Stable; no significant radio effect' },
-    { name:'D-Layer', bot:60, top:90, color:'#6a3030', note:'Absorbs HF by day; vanishes at night' },
-    { name:'E-Layer', bot:90, top:150, color:'#6a6a30', note:'Sporadic E reflects VHF; MF reflection' },
-    { name:'F1-Layer', bot:150, top:250, color:'#306a30', note:'Merges with F2 at night' },
-    { name:'F2-Layer', bot:250, top:500, color:'#30306a', note:'Primary HF refraction layer; DX engine' },
+    { name:'Troposphere',  bot:0,   top:12,  color:lt?'#4a9a7a':'#2a5a4a', note:'Weather, tropo ducting (VHF/UHF)', tag:'0–12 km' },
+    { name:'Stratosphere', bot:12,  top:50,  color:lt?'#4a7a9a':'#2a4a6a', note:'Stable; no significant radio effect', tag:'12–50 km' },
+    { name:'D-Layer',      bot:60,  top:90,  color:lt?'#b05050':'#6a3030', note:'Absorbs HF by day; vanishes at night', tag:'60–90 km' },
+    { name:'E-Layer',      bot:90,  top:150, color:lt?'#a0a030':'#6a6a30', note:'Sporadic E reflects VHF; MF reflection', tag:'90–150 km' },
+    { name:'F1-Layer',     bot:150, top:250, color:lt?'#50a050':'#306a30', note:'Merges with F2 at night', tag:'150–250 km' },
+    { name:'F2-Layer',     bot:250, top:500, color:lt?'#5050a0':'#30306a', note:'Primary HF refraction layer; DX engine', tag:'250–500 km' },
   ];
-  /* piecewise scale: 0-100km gets 40% of height, 100-520km gets 60% */
-  const usable = h - 100;
-  const split = 0.4 * usable; /* pixels for 0-100km */
-  const scale = y => {
-    if (y <= 100) return h - 70 - (y / 100) * split;
-    return h - 70 - split - ((y - 100) / 420) * (usable - split);
+
+  /* piecewise altitude scale (3-segment): 0–50 km 30%, 50–100 km 12%, 100–520 km 58% */
+  const padTop = 28, padBot = 60, axisL = 58, axisR = w - 16;
+  const usable = h - padTop - padBot;
+  const seg1 = 0.30 * usable;   /* 0–50 km   — generous for Troposphere */
+  const seg2 = 0.12 * usable;   /* 50–100 km  */
+  const seg3 = 0.58 * usable;   /* 100–520 km */
+  const alt2y = a => {
+    if (a <= 50)  return h - padBot - (a / 50) * seg1;
+    if (a <= 100) return h - padBot - seg1 - ((a - 50) / 50) * seg2;
+    return h - padBot - seg1 - seg2 - ((a - 100) / 420) * seg3;
   };
 
+  /* palette */
+  const bg       = lt ? '#f0f2f6' : '#0a0c14';
+  const gridClr  = lt ? '#d0d5e0' : '#161c28';
+  const gridMaj  = lt ? '#c0c8d4' : '#1a2030';
+  const axisTxt  = lt ? '#5a6878' : '#8a9ab0';
+  const labelTxt = lt ? '#2a3040' : '#d0dce8';
+  const noteTxt  = lt ? '#4a5a6e' : '#8a9ab4';
+  const earthFg  = lt ? '#2a7a50' : '#8abba0';
+  const earthBg  = lt ? '#b8e0b8' : '#1a3020';
+  const skyClr   = lt ? '#5588cc' : '#6699ff';
+  const gwClr    = lt ? '#aa8800' : '#ffc833';
+  const losClr   = lt ? '#00884a' : '#33ff88';
+  const arrowOp  = lt ? '0.85' : '0.9';
+
   let svg = '<div class="prop-section"><h3>Atmospheric Layers & Ionosphere</h3>' +
-    '<svg class="atmo-diagram" viewBox="0 0 ' + w + ' ' + h + '">';
+    '<div class="world-map-wrap"><svg viewBox="0 0 ' + w + ' ' + h + '">';
 
-  /* background */
-  svg += '<rect x="0" y="0" width="' + w + '" height="' + h + '" fill="' + (lt?'#f0f2f6':'#0a0c14') + '" rx="4"/>';
+  /* ── background ── */
+  svg += '<rect width="' + w + '" height="' + h + '" fill="' + bg + '" rx="4"/>';
 
-  /* altitude axis */
-  [0, 50, 100, 200, 300, 400, 500].forEach(alt => {
-    const y = scale(alt);
-    svg += '<line x1="55" y1="' + y + '" x2="' + (w-10) + '" y2="' + y + '" stroke="' + (lt?'#d0d5e0':'#1a1f2e') + '" stroke-width="0.5" stroke-dasharray="3,3"/>';
-    svg += '<text x="50" y="' + (y+4) + '" fill="' + (lt?'#5a6878':'#a0b0c8') + '" font-size="11" text-anchor="end">' + alt + ' km</text>';
+  /* ── defs: gradients for each layer + arrowhead markers ── */
+  svg += '<defs>';
+  layers.forEach(function(l, i) {
+    svg += '<linearGradient id="lg' + i + '" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0%" stop-color="' + l.color + '" stop-opacity="' + (lt?'0.38':'0.45') + '"/>' +
+      '<stop offset="100%" stop-color="' + l.color + '" stop-opacity="' + (lt?'0.12':'0.18') + '"/>' +
+      '</linearGradient>';
+  });
+  /* arrow markers */
+  svg += '<marker id="arrSky" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6" orient="auto">' +
+    '<path d="M0,0 L10,4 L0,8 Z" fill="' + skyClr + '"/></marker>';
+  svg += '<marker id="arrGw" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6" orient="auto">' +
+    '<path d="M0,0 L10,4 L0,8 Z" fill="' + gwClr + '"/></marker>';
+  svg += '<marker id="arrLos" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6" orient="auto">' +
+    '<path d="M0,0 L10,4 L0,8 Z" fill="' + losClr + '"/></marker>';
+  svg += '</defs>';
+
+  /* ── altitude grid lines ── */
+  [0, 50, 100, 200, 300, 400, 500].forEach(function(alt) {
+    var y = alt2y(alt);
+    var major = alt % 100 === 0;
+    svg += '<line x1="' + axisL + '" y1="' + y + '" x2="' + axisR + '" y2="' + y + '" stroke="' + (major ? gridMaj : gridClr) + '" stroke-width="' + (major ? '0.6' : '0.3') + '" stroke-dasharray="' + (major ? '0' : '3,4') + '"/>';
+    svg += '<text x="' + (axisL - 6) + '" y="' + (y + 3.5) + '" fill="' + axisTxt + '" font-size="9" text-anchor="end">' + alt + ' km</text>';
   });
 
-  /* draw layers */
-  layers.forEach(l => {
-    const y1 = scale(l.top);
-    const y2 = scale(l.bot);
-    svg += '<rect x="65" y="' + y1 + '" width="' + (w-85) + '" height="' + (y2-y1) + '" fill="' + l.color + '" opacity="0.4" rx="2"/>';
-    const mid = (y1 + y2) / 2;
-    svg += '<text x="75" y="' + (mid+4) + '" fill="' + (lt?'#2a3040':'#d0dce8') + '" font-size="13" font-weight="600">' + l.name + '</text>';
-    svg += '<text x="' + (w-20) + '" y="' + (mid+4) + '" fill="' + (lt?'#3a4558':'#c0ccd8') + '" font-size="11" text-anchor="end">' + l.note + '</text>';
+  /* ── mesopause gap label (50–60 km) ── */
+  var gapY = (alt2y(50) + alt2y(60)) / 2;
+  svg += '<text x="' + ((axisL + axisR) / 2) + '" y="' + (gapY + 3) + '" fill="' + (lt ? '#a0a8b8' : '#3a4550') + '" font-size="8" text-anchor="middle" letter-spacing="3" text-transform="uppercase">— mesosphere gap —</text>';
+
+  /* ── draw layers ── */
+  layers.forEach(function(l, i) {
+    var y1 = alt2y(l.top);
+    var y2 = alt2y(l.bot);
+    var lh = y2 - y1;
+
+    /* filled band with gradient */
+    svg += '<rect x="' + axisL + '" y="' + y1 + '" width="' + (axisR - axisL) + '" height="' + lh + '" fill="url(#lg' + i + ')" rx="2"/>';
+    /* subtle top/bottom border lines */
+    svg += '<line x1="' + axisL + '" y1="' + y1 + '" x2="' + axisR + '" y2="' + y1 + '" stroke="' + l.color + '" stroke-width="0.6" opacity="' + (lt ? '0.5' : '0.4') + '"/>';
+    svg += '<line x1="' + axisL + '" y1="' + (y1 + lh) + '" x2="' + axisR + '" y2="' + (y1 + lh) + '" stroke="' + l.color + '" stroke-width="0.3" opacity="' + (lt ? '0.3' : '0.2') + '"/>';
+
+    /* left: layer name + altitude tag */
+    var mid = y1 + lh / 2;
+    svg += '<text x="' + (axisL + 10) + '" y="' + (mid + 1) + '" fill="' + labelTxt + '" font-size="12" font-weight="600">' + l.name + '</text>';
+    svg += '<text x="' + (axisL + 10) + '" y="' + (mid + 13) + '" fill="' + noteTxt + '" font-size="8.5">' + l.tag + '</text>';
+
+    /* right: description */
+    svg += '<text x="' + (axisR - 8) + '" y="' + (mid + 4) + '" fill="' + noteTxt + '" font-size="10" text-anchor="end">' + l.note + '</text>';
   });
 
-  /* Earth surface */
-  const ground = scale(0);
-  svg += '<rect x="65" y="' + ground + '" width="' + (w-85) + '" height="6" fill="' + (lt?'#a8d4a8':'#1a3020') + '" rx="1"/>';
-  svg += '<text x="75" y="' + (ground+20) + '" fill="' + (lt?'#2a7a50':'#8abba0') + '" font-size="11" font-weight="500">Earth Surface</text>';
+  /* ── Earth surface ── */
+  var groundY = alt2y(0);
+  svg += '<rect x="' + axisL + '" y="' + groundY + '" width="' + (axisR - axisL) + '" height="8" fill="' + earthBg + '" rx="1"/>';
+  svg += '<line x1="' + axisL + '" y1="' + groundY + '" x2="' + axisR + '" y2="' + groundY + '" stroke="' + earthFg + '" stroke-width="1.2"/>';
+  svg += '<text x="' + (axisL + 10) + '" y="' + (groundY + 22) + '" fill="' + earthFg + '" font-size="10" font-weight="600">EARTH SURFACE</text>';
 
-  /* draw propagation arrows */
-  /* Sky wave — bouncing off F2 (draw first, behind other elements) */
-  const f2mid = (scale(500) + scale(250)) / 2;
-  const skyX1 = 220, skyPeakX = w/3 + 40, skyX2 = w/2 + 40;
-  svg += '<path d="M' + skyX1 + ',' + (ground-3) + ' L' + skyPeakX + ',' + (f2mid+10) + ' L' + skyX2 + ',' + (ground-3) + '" fill="none" stroke="' + (lt?'#669900':'#aaff33') + '" stroke-width="2"/>';
-  svg += '<text x="' + (skyPeakX+15) + '" y="' + (f2mid-2) + '" fill="' + (lt?'#669900':'#aaff33') + '" font-size="11" font-weight="500">Sky Wave / F2 (HF)</text>';
+  /* ── Propagation paths ── */
 
-  /* Line of sight — short line near ground */
-  const losY = ground - 12;
-  svg += '<line x1="' + skyX1 + '" y1="' + losY + '" x2="' + ((skyX1 + skyX2)/2) + '" y2="' + losY + '" stroke="' + (lt?'#00884a':'#33ff88') + '" stroke-width="2"/>';
-  /* Label above the green LoS line */
-  const losMidX = (skyX1 + (skyX1 + skyX2)/2) / 2 + 60;
-  svg += '<text x="' + losMidX + '" y="' + (losY - 18) + '" fill="' + (lt?'#00884a':'#33ff88') + '" font-size="11" font-weight="500" text-anchor="middle">Line of Sight (VHF/UHF/SHF)</text>';
+  /* transmitter tower icon */
+  var txX = axisL + 140;
+  var txBase = groundY;
+  var txTop = txBase - 38;
+  svg += '<line x1="' + txX + '" y1="' + txBase + '" x2="' + txX + '" y2="' + txTop + '" stroke="' + labelTxt + '" stroke-width="2"/>';
+  svg += '<line x1="' + (txX - 6) + '" y1="' + txBase + '" x2="' + txX + '" y2="' + txTop + '" stroke="' + labelTxt + '" stroke-width="0.8" opacity="0.5"/>';
+  svg += '<line x1="' + (txX + 6) + '" y1="' + txBase + '" x2="' + txX + '" y2="' + txTop + '" stroke="' + labelTxt + '" stroke-width="0.8" opacity="0.5"/>';
+  svg += '<circle cx="' + txX + '" cy="' + (txTop - 4) + '" r="2.5" fill="' + skyClr + '"/>';
 
-  /* Ground wave — curved line along surface */
-  svg += '<path d="M' + (skyX1 - 40) + ',' + (ground-2) + ' Q' + ((skyX1 + skyX2)/2) + ',' + (ground-30) + ' ' + (skyX2 + 40) + ',' + (ground-2) + '" fill="none" stroke="' + (lt?'#aa8800':'#ffc833') + '" stroke-width="2" stroke-dasharray="4,2"/>';
-  /* Label at Earth Surface level */
-  svg += '<text x="' + (w/3) + '" y="' + (ground + 20) + '" fill="' + (lt?'#aa8800':'#ffc833') + '" font-size="11" font-weight="500" text-anchor="middle">Ground Wave (LF/MF)</text>';
+  /* radio wave arcs emanating from tower top */
+  [12, 20, 28].forEach(function(r) {
+    svg += '<path d="M' + (txX + r * 0.7) + ',' + (txTop - 4 - r * 0.7) + ' A' + r + ',' + r + ' 0 0,0 ' + (txX + r * 0.7) + ',' + (txTop - 4 + r * 0.7) + '" fill="none" stroke="' + skyClr + '" stroke-width="0.6" opacity="0.35"/>';
+  });
+
+  /* ── Sky wave: smooth Bézier arc from TX up to F2 and back down ── */
+  var f2mid = (alt2y(500) + alt2y(250)) / 2;
+  var skyLandX = axisL + 520;
+  var skyCpX1 = txX + 60, skyCpY1 = f2mid - 30;
+  var skyCpX2 = skyLandX - 60, skyCpY2 = f2mid - 30;
+  svg += '<path d="M' + txX + ',' + (txTop - 4) + ' C' + skyCpX1 + ',' + skyCpY1 + ' ' + skyCpX2 + ',' + skyCpY2 + ' ' + skyLandX + ',' + (groundY - 2) + '" fill="none" stroke="' + skyClr + '" stroke-width="2" opacity="' + arrowOp + '" marker-end="url(#arrSky)"/>';
+  /* label at the apex */
+  var skyApexX = (txX + skyLandX) / 2;
+  svg += '<text x="' + (skyApexX + 4) + '" y="' + (f2mid - 12) + '" fill="' + skyClr + '" font-size="10" font-weight="600" text-anchor="middle">SKY WAVE (HF)</text>';
+  svg += '<text x="' + (skyApexX + 4) + '" y="' + (f2mid + 1) + '" fill="' + skyClr + '" font-size="8" text-anchor="middle" opacity="0.7">Refracted by F2-Layer</text>';
+
+  /* ── Ground wave: smooth arc hugging earth ── */
+  var gwEndX = axisL + 340;
+  svg += '<path d="M' + txX + ',' + (txTop + 8) + ' Q' + ((txX + gwEndX) / 2) + ',' + (groundY - 40) + ' ' + gwEndX + ',' + (groundY - 2) + '" fill="none" stroke="' + gwClr + '" stroke-width="1.8" stroke-dasharray="6,3" opacity="' + arrowOp + '" marker-end="url(#arrGw)"/>';
+  svg += '<text x="' + ((txX + gwEndX) / 2 - 10) + '" y="' + (groundY - 40) + '" fill="' + gwClr + '" font-size="10" font-weight="600">GROUND WAVE (LF/MF)</text>';
+  svg += '<text x="' + ((txX + gwEndX) / 2 - 10) + '" y="' + (groundY - 29) + '" fill="' + gwClr + '" font-size="8" opacity="0.7">Follows Earth curvature</text>';
+
+  /* ── Line of sight: straight low-angle line ── */
+  var losEndX = axisL + 260;
+  svg += '<line x1="' + txX + '" y1="' + (txTop - 4) + '" x2="' + losEndX + '" y2="' + (groundY - 8) + '" stroke="' + losClr + '" stroke-width="1.8" opacity="' + arrowOp + '" marker-end="url(#arrLos)"/>';
+  svg += '<text x="' + ((txX + losEndX) / 2 + 14) + '" y="' + (txTop - 14) + '" fill="' + losClr + '" font-size="10" font-weight="600">LINE OF SIGHT (VHF/UHF/SHF)</text>';
+
+  /* ── NVIS: near-vertical arc up and straight back down ── */
+  var nvisClr = lt ? '#9955cc' : '#bb88ff';
+  var nvisApexY = alt2y(280);
+  var nvisReturnX = txX + 55;
+  svg += '<path d="M' + txX + ',' + (txTop - 4) + ' C' + (txX + 5) + ',' + (nvisApexY - 10) + ' ' + (nvisReturnX + 5) + ',' + (nvisApexY - 10) + ' ' + nvisReturnX + ',' + (groundY - 2) + '" fill="none" stroke="' + nvisClr + '" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.75" marker-end="url(#arrSky)"/>';
+  svg += '<text x="' + (txX + 30) + '" y="' + (nvisApexY + 14) + '" fill="' + nvisClr + '" font-size="9" font-weight="500">NVIS</text>';
+
+  /* ── "Altitude" axis label ── */
+  svg += '<text x="12" y="' + (h / 2) + '" fill="' + axisTxt + '" font-size="9" text-anchor="middle" transform="rotate(-90,12,' + (h / 2) + ')" letter-spacing="2">ALTITUDE</text>';
+
+  /* ── top caption ── */
+  svg += '<text x="' + (w / 2) + '" y="16" fill="' + (lt ? '#5a6878' : '#6a7a90') + '" font-size="9" text-anchor="middle">Ionospheric layers and radio propagation paths — not to scale</text>';
+
+  /* border */
+  svg += '<rect width="' + w + '" height="' + h + '" fill="none" stroke="' + (lt ? '#c0c8d4' : '#1a2030') + '" stroke-width="0.5" rx="4"/>';
 
   svg += '</svg></div>';
+
+  /* ── legend (matching world-map style) ── */
+  svg += '<div class="prop-legend">' +
+    '<div class="prop-legend-item"><div class="prop-legend-swatch" style="background:' + skyClr + '"></div>Sky Wave (HF)</div>' +
+    '<div class="prop-legend-item"><div class="prop-legend-swatch" style="background:' + gwClr + '"></div>Ground Wave (LF/MF)</div>' +
+    '<div class="prop-legend-item"><div class="prop-legend-swatch" style="background:' + losClr + '"></div>Line of Sight (VHF+)</div>' +
+    '<div class="prop-legend-item"><div class="prop-legend-swatch" style="background:' + nvisClr + '"></div>NVIS (2–10 MHz)</div>' +
+    '</div></div>';
   return svg;
 }
 
