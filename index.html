@@ -1585,7 +1585,8 @@ function showIntro(){
     '<div class="intro-line">Pick a band on the left — or just smash the keyboard:</div>'+
     '<div class="intro-sep"></div>'+
     '<div class="intro-line"><span class="key">Up</span> <span class="key">Dn</span> hop between bands</div>'+
-    '<div class="intro-line"><span class="key">Lt</span> <span class="key">Rt</span> browse sub‑bands</div>'+
+    '<div class="intro-line"><span class="key">Rt</span> enter · <span class="key">Up</span><span class="key">Dn</span><span class="key">Rt</span> browse sub‑bands</div>'+
+    '<div class="intro-line"><span class="key">Lt</span> back to band from any sub‑band</div>'+
     '<div class="intro-line"><span class="key">D/L</span> toggle in the top‑right for <span class="accent">light mode</span></div>'+
     '<div class="intro-sep"></div>'+
     '<div class="intro-line" style="opacity:.5">Bonus: check out <strong>ABC</strong> (glossary) and <strong>PROP</strong> (propagation maps)</div>';
@@ -2440,6 +2441,36 @@ document.addEventListener('keydown', e => {
   else if (activeSpecial === 'propagation') curIdx = BANDS.length + 1;
   else curIdx = BANDS.findIndex(b => b.id === activeBand);
 
+  const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
+  if (!isArrow) return;
+
+  /* ── Sub-band level: a sub is selected ── */
+  if (!activeSpecial && activeBand && activeSub) {
+    e.preventDefault();
+    /* Left: escape back to band level from any sub-band */
+    if (e.key === 'ArrowLeft') {
+      activeSub = null;
+      document.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active'));
+      $('#detailInner').style.display = 'none';
+      $('#emptyState').style.display = 'flex';
+      $('#emptyState').className = 'empty-state';
+      $('#emptyState').innerHTML = '← Select a sub‑band';
+      return;
+    }
+    const band = BANDS.find(b => b.id === activeBand);
+    if (band) {
+      const subs = band.subs;
+      let subIdx = subs.findIndex(s => s.name === activeSub);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') subIdx = Math.min(subIdx + 1, subs.length - 1);
+      else subIdx = Math.max(subIdx - 1, 0); /* ArrowUp */
+      const subBtns = document.querySelectorAll('#subInner .sub-btn');
+      if (subBtns[subIdx]) selectSub(band, subs[subIdx], subBtns[subIdx]);
+    }
+    return;
+  }
+
+  /* ── Band level: no sub selected ── */
+
   /* Up / Down — navigate bands + ABC + PROP */
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
@@ -2451,7 +2482,7 @@ document.addEventListener('keydown', e => {
     else { activeSpecial = null; selectBand(tab.data); }
   }
 
-  /* Left / Right — navigate sub-bands within active band */
+  /* Left / Right — navigate sub-bands within active band (enter or step through) */
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
     if (activeSpecial) return; /* no sub-bands for glossary/propagation */
     const band = BANDS.find(b => b.id === activeBand);
