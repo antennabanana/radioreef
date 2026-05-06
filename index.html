@@ -2871,12 +2871,12 @@ function showIntro(){
     '<div class="intro-sep"></div>'+
     '<div class="intro-line">Pick a band on the left — or just smash the keyboard:</div>'+
     '<div class="intro-sep"></div>'+
-    '<div class="intro-line"><span class="key">↑</span> <span class="key">↓</span> hop between bands</div>'+
-    '<div class="intro-line"><span class="key">→</span> enter · <span class="key">↑</span><span class="key">↓</span><span class="key">→</span> browse sub‑bands</div>'+
-    '<div class="intro-line"><span class="key">←</span> back to band from any sub‑band</div>'+
-    '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D/L</span> dark/light toggle</div>'+
-    '<div class="intro-sep"></div>'+
-    '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators)</div>';
+     '<div class="intro-line"><span class="key">↑</span> <span class="key">↓</span> hop between bands &amp; tabs — works from here too</div>'+
+     '<div class="intro-line"><span class="key">→</span> enter · <span class="key">↑</span><span class="key">↓</span><span class="key">→</span> browse sub‑bands</div>'+
+     '<div class="intro-line"><span class="key">←</span> back to band from any sub‑band</div>'+
+     '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode</div>'+
+     '<div class="intro-sep"></div>'+
+     '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas)</div>';
 }
 
 /* ── count total sub-bands ───────────────────────────────── */
@@ -4436,11 +4436,21 @@ setInterval(updateClock, 1000);
 
 /* ── keyboard nav ─────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
-  /* '/' focuses global search (unless already focused) */
-  if (e.key === '/' && document.activeElement !== document.getElementById('globalSearch')) {
+  /* ignore when typing in an input */
+  const tag = document.activeElement && document.activeElement.tagName;
+  const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  /* '/' focuses global search */
+  if (e.key === '/' && !inInput) {
     e.preventDefault();
     document.getElementById('globalSearch').focus();
     return;
+  }
+
+  /* 'D' → dark mode, 'L' → light mode */
+  if (!inInput) {
+    if (e.key === 'd' || e.key === 'D') { if (isLight())  { toggleTheme(); } return; }
+    if (e.key === 'l' || e.key === 'L') { if (!isLight()) { toggleTheme(); } return; }
   }
 
   const allTabs = [
@@ -4449,7 +4459,8 @@ document.addEventListener('keydown', e => {
     { type:'propagation' },
     { type:'broadcast' },
     { type:'calc' },
-    { type:'search' }
+    { type:'search' },
+    { type:'antennas' }
   ];
 
   /* find current tab index */
@@ -4459,6 +4470,7 @@ document.addEventListener('keydown', e => {
   else if (activeView === 'broadcast')   curIdx = BANDS.length + 2;
   else if (activeView === 'calc')        curIdx = BANDS.length + 3;
   else if (activeView === 'search')      curIdx = BANDS.length + 4;
+  else if (activeView === 'antennas')    curIdx = BANDS.length + 5;
   else if (activeView === 'band')        curIdx = BANDS.findIndex(b => b.id === activeBand);
 
   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
@@ -4491,16 +4503,22 @@ document.addEventListener('keydown', e => {
 
   /* ── Top-level nav: Up / Down ── */
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-    if (curIdx < 0) return;
     e.preventDefault();
-    let next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
-    next = Math.max(0, Math.min(next, allTabs.length - 1));
+    /* from intro (no tab selected): ArrowDown → first tab, ArrowUp → last tab */
+    let next;
+    if (curIdx < 0) {
+      next = e.key === 'ArrowDown' ? 0 : allTabs.length - 1;
+    } else {
+      next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
+      next = Math.max(0, Math.min(next, allTabs.length - 1));
+    }
     const tab = allTabs[next];
     if      (tab.type === 'glossary')    openGlossary();
     else if (tab.type === 'propagation') openPropagation();
     else if (tab.type === 'broadcast')   openBroadcast();
     else if (tab.type === 'calc')        openCalc();
     else if (tab.type === 'search')      openSearch('');
+    else if (tab.type === 'antennas')    openAntennas();
     else                                 selectBand(tab.data);
   }
 
