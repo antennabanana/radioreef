@@ -42,8 +42,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   height:22px;padding:0 6px;gap:5px;transition:border-color .2s,box-shadow .2s;
 }
 .search-wrap:focus-within{border-color:#33ff88;box-shadow:0 0 6px rgba(0,255,136,.2)}
-.search-icon{width:12px;height:12px;color:#4a5a70;flex-shrink:0}
-.search-wrap:focus-within .search-icon{color:#33ff88}
+.search-tag{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#4a5a70;flex-shrink:0;font-family:'JetBrains Mono',monospace;pointer-events:none}
+.search-wrap:focus-within .search-tag{color:#33ff88}
 #globalSearch{
   flex:1;height:100%;background:none;border:none;
   color:#c8ccd0;font-family:'JetBrains Mono',monospace;
@@ -97,6 +97,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .band-btn[data-band="search"] .label{color:#5a7a50}
 .band-btn[data-band="search"].active .label{color:#88ff66}
 .band-btn[data-band="search"]::after{background:#88ff66}
+.band-btn[data-band="antennas"] .label{color:#7a4a6a}
+.band-btn[data-band="antennas"].active .label{color:#ff66cc}
+.band-btn[data-band="antennas"]::after{background:#ff66cc}
 
 @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,255,255,.15)) brightness(1.1)}50%{filter:drop-shadow(0 0 10px rgba(255,255,255,.25)) brightness(1.25)}}
 
@@ -167,6 +170,23 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .glossary-term{font-size:13px;font-weight:600;color:#88ccff;margin-bottom:1px}
 .glossary-def{font-size:13px;color:#c0ccd8;line-height:1.4}
 .glossary-cat{grid-column:1/-1;font-size:16px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#ffaa44;padding:12px 10px 6px;border-bottom:2px solid #ffaa44}
+
+/* ── antenna guide panel ────────────────────────────────────────────────── */
+.ant-section{border:1px solid #1e2840;border-radius:3px;margin-bottom:14px;overflow:hidden}
+.ant-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,#141828,#111420);border-bottom:1px solid #1e2840}
+.ant-name{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e0e8f0}
+.ant-badge{font-size:10px;letter-spacing:.5px;padding:2px 6px;border-radius:2px;background:#ff66cc22;color:#ff66cc;border:1px solid #ff66cc44;margin-left:auto}
+.ant-body{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:12px;align-items:start}
+.ant-svg-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ant-svg-label{font-size:10px;color:#5a7080;letter-spacing:.5px;text-align:center}
+.ant-desc{font-size:12px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
+.ant-props{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:10px}
+.ant-pro,.ant-con{font-size:11px;line-height:1.5;padding-left:14px;position:relative}
+.ant-pro{color:#33ff88}.ant-pro::before{content:'▲';position:absolute;left:0;font-size:9px}
+.ant-con{color:#ff6644}.ant-con::before{content:'▼';position:absolute;left:0;font-size:9px}
+.ant-best{font-size:11px;color:#44ccff;background:#44ccff11;border:1px solid #44ccff33;border-radius:2px;padding:4px 8px;margin-bottom:8px}
+.ant-null-note{font-size:11px;color:#ffaa44;background:#ffaa4411;border:1px solid #ffaa4433;border-radius:2px;padding:4px 8px}
+@media(max-width:540px){.ant-body{grid-template-columns:1fr}}
 
 /* ── propagation panel ──────────────────────────────────────────────────── */
 .prop-section{margin-bottom:14px}
@@ -246,10 +266,10 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 /* ── calculator panel ───────────────────────────────────────────────────── */
 .calc-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
 .calc-tab{padding:5px 12px;cursor:pointer;font-size:12px;color:#6a7a90;
-  border-radius:3px;
+  border-radius:3px;border:1px solid #1e2840;
   background:linear-gradient(180deg,#13162200,#111420);transition:all .2s;user-select:none}
-.calc-tab:hover{background:linear-gradient(180deg,#1a1e30,#151828);color:#a0b0c8}
-.calc-tab.active{color:#44ccff;background:linear-gradient(180deg,#181e32,#141a2c)}
+.calc-tab:hover{background:linear-gradient(180deg,#1a1e30,#151828);color:#a0b0c8;border-color:#2a3a54}
+.calc-tab.active{color:#44ccff;background:linear-gradient(180deg,#181e32,#141a2c);border-color:#44ccff}
 .calc-form{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
 .calc-form label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#9aaabe;letter-spacing:.5px}
 .calc-form input{
@@ -350,8 +370,8 @@ html.light .top-bar .range{color:#5a6878}
 html.light .top-bar .dot{background:#00885a;box-shadow:0 0 6px #00885a}
 html.light .search-wrap{background:#e8eaf0;border-color:#c0c8d4}
 html.light .search-wrap:focus-within{border-color:#00885a;box-shadow:0 0 6px rgba(0,136,90,.2)}
-html.light .search-icon{color:#8a9aaa}
-html.light .search-wrap:focus-within .search-icon{color:#00885a}
+html.light .search-tag{color:#8a9aaa}
+html.light .search-wrap:focus-within .search-tag{color:#00885a}
 html.light #globalSearch{background:none;color:#2a3040}
 html.light #globalSearch::placeholder{color:#8a9aaa}
 
@@ -396,6 +416,9 @@ html.light .band-btn[data-band="calc"]::after{background:#1155cc}
 html.light .band-btn[data-band="search"] .label{color:#117711}
 html.light .band-btn[data-band="search"].active .label{color:#117711}
 html.light .band-btn[data-band="search"]::after{background:#117711}
+html.light .band-btn[data-band="antennas"] .label{color:#993377}
+html.light .band-btn[data-band="antennas"].active .label{color:#993377}
+html.light .band-btn[data-band="antennas"]::after{background:#993377}
 
 html.light .band-sep{background:linear-gradient(90deg,transparent,#c8cdd8,transparent)}
 
@@ -423,6 +446,17 @@ html.light .glossary-item:nth-child(odd){border-right-color:#dce0e8}
 html.light .glossary-term{color:#2266bb}
 html.light .glossary-def{color:#3a4558}
 html.light .glossary-cat{color:#cc7700;border-bottom-color:#cc7700}
+
+/* antenna guide */
+html.light .ant-section{border-color:#c8cdd8}
+html.light .ant-header{background:linear-gradient(180deg,#dde0e8,#e4e8f0);border-bottom-color:#c8cdd8}
+html.light .ant-name{color:#2a3040}
+html.light .ant-badge{background:#ff44aa18;color:#bb0077;border-color:#bb007744}
+html.light .ant-desc{color:#3a4558}
+html.light .ant-best{color:#1155cc;background:#1155cc11;border-color:#1155cc33}
+html.light .ant-null-note{color:#cc7700;background:#cc770011;border-color:#cc770033}
+html.light .ant-pro{color:#007744}
+html.light .ant-con{color:#cc3300}
 
 /* propagation */
 html.light .prop-section h3{color:#cc7700}
@@ -458,9 +492,9 @@ html.light .bc-result-table .bc-station{color:#cc5500}
 html.light .bc-no-results{color:#8a94a0}
 
 /* calc light */
-html.light .calc-tab{color:#5a6878;background:linear-gradient(180deg,#eef0f400,#e8eaef)}
-html.light .calc-tab:hover{background:linear-gradient(180deg,#dde0e8,#e0e4ec);color:#2a3040}
-html.light .calc-tab.active{color:#1155cc;background:linear-gradient(180deg,#d4d8e2,#dce0ea)}
+html.light .calc-tab{color:#5a6878;background:linear-gradient(180deg,#eef0f400,#e8eaef);border:1px solid #c8cdd8}
+html.light .calc-tab:hover{background:linear-gradient(180deg,#dde0e8,#e0e4ec);color:#2a3040;border-color:#aab0be}
+html.light .calc-tab.active{color:#1155cc;background:linear-gradient(180deg,#d4d8e2,#dce0ea);border-color:#1155cc}
 html.light .calc-form label{color:#5a6878}
 html.light .calc-form input{background:#e8eaf0;border-color:#c0c8d4;color:#2a3040}
 html.light .calc-form button{background:linear-gradient(180deg,#e0e8f0,#d8e0ea);border-color:#1155cc;color:#1155cc}
@@ -545,7 +579,7 @@ html.light .search-count{color:#7a8a9a}
     <div class="dot"></div>
     <button class="title" onclick="goHome()">Radio Frequency Spectrum</button>
     <span class="range">15 kHz — 5 GHz</span>
-    <div class="search-wrap"><svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4"/><line x1="10" y1="10" x2="14" y2="14"/></svg><input id="globalSearch" type="search" placeholder="search bands, terms, freqs…" autocomplete="off" spellcheck="false"></div>
+    <div class="search-wrap"><span class="search-tag">SEARCH</span><input id="globalSearch" type="search" placeholder="search bands, terms, freqs…" autocomplete="off" spellcheck="false"></div>
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode">
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -2811,6 +2845,7 @@ function refreshCurrentView(){
   else if(activeView === 'broadcast') openBroadcast();
   else if(activeView === 'calc') openCalc();
   else if(activeView === 'search') openSearch(lastSearchQuery);
+  else if(activeView === 'antennas') openAntennas();
   else if(activeView === 'band' && activeBand){
     var band = BANDS.find(function(b){ return b.id === activeBand; });
     if(band && activeSub){
@@ -2922,6 +2957,16 @@ BANDS.forEach(b => {
   el.dataset.band = 'search';
   el.innerHTML = '<span class="label">⌕</span><span class="freq">Search</span>';
   el.addEventListener('click', () => openSearch(lastSearchQuery));
+  bandPanel.appendChild(el);
+})();
+
+/* antennas button */
+(function(){
+  const el = document.createElement('div');
+  el.className = 'band-btn';
+  el.dataset.band = 'antennas';
+  el.innerHTML = '<span class="label">ANT</span><span class="freq">Antennas</span>';
+  el.addEventListener('click', () => openAntennas());
   bandPanel.appendChild(el);
 })();
 
@@ -3322,7 +3367,7 @@ function openCalc() {
     /* Wavelength panel */
     '<div class="calc-panel" id="calcPanel_wl">' +
       '<div class="calc-section"><h4>Wavelength ↔ Frequency</h4>' +
-      '<p class="calc-desc">Convert between frequency and free-space wavelength. Enter a frequency or a wavelength — the other value is calculated instantly.</p>' +
+      '<p class="calc-desc">Wavelength and frequency are inversely related: as frequency rises, wavelength shrinks. This calculator uses the exact speed of light (c = 299 792 458 m/s) in free space. Enter any frequency (e.g. "14.074 MHz", "2.4 GHz") or any wavelength (e.g. "21.3 m", "12.5 cm") and the other value is computed instantly. Knowing your wavelength is the first step for sizing antennas, planning feed-line lengths, and estimating near-field distances. For example, the 20-metre amateur band sits at ≈14 MHz and the 2 m VHF band at ≈144 MHz.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_wl_freq" class="calc-input" placeholder="e.g. 14.074 MHz" oninput="calc_wl()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Wavelength</label>' +
@@ -3333,7 +3378,7 @@ function openCalc() {
     /* Dipole panel */
     '<div class="calc-panel" id="calcPanel_ant" style="display:none">' +
       '<div class="calc-section"><h4>Half-Wave Dipole</h4>' +
-      '<p class="calc-desc">Calculate the physical length of a half-wave dipole or quarter-wave vertical for any frequency. Uses a velocity factor of 0.95 for real wire.</p>' +
+      '<p class="calc-desc">A half-wave dipole is the most common wire antenna: each arm is cut to slightly less than a quarter wavelength, with the total length ≈0.475 × λ. The 0.475 factor accounts for a velocity factor of 0.95 — real wire has slightly shorter electrical length than free space. Enter your operating frequency (e.g. "7.1 MHz") to get the total dipole length and the length of each arm. For a quarter-wave vertical, use the single-arm figure. At HF, a 40 m dipole is about 20 m long; at 2 m VHF, just under 1 m total. Always cut slightly long and trim to resonance using an antenna analyser.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_ant_freq" class="calc-input" placeholder="e.g. 14.2 MHz" oninput="calc_ant()"/></div>' +
       '<div id="calc_ant_res" class="calc-result"></div>' +
@@ -3342,7 +3387,7 @@ function openCalc() {
     /* FSPL panel */
     '<div class="calc-panel" id="calcPanel_fspl" style="display:none">' +
       '<div class="calc-section"><h4>Free-Space Path Loss</h4>' +
-      '<p class="calc-desc">Estimate signal attenuation due to the spreading of radio waves over distance in free space. Essential for link budget calculations.</p>' +
+      '<p class="calc-desc">Free-space path loss (FSPL) quantifies how much a radio signal weakens purely from spreading out over distance — with no obstacles, atmosphere, or multipath. It is the fundamental floor of any link budget. Enter a frequency and a distance (supports units: "2.4 GHz", "10 km", "1500 m", "50 miles"). FSPL grows 6 dB for every doubling of distance and 6 dB for every doubling of frequency. A 2.4 GHz Wi-Fi link at 1 km loses ≈100 dB; a 10 GHz satellite downlink at 36 000 km loses over 205 dB. Real systems add antenna gains and subtract receiver sensitivity to compute link margin.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_fspl_freq" class="calc-input" placeholder="e.g. 2.4 GHz" oninput="calc_fspl()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Distance</label>' +
@@ -3353,7 +3398,7 @@ function openCalc() {
     /* Power/Doppler panel */
     '<div class="calc-panel" id="calcPanel_pwr" style="display:none">' +
       '<div class="calc-section"><h4>Power Conversion — dBm ↔ Watts</h4>' +
-      '<p class="calc-desc">Convert transmitter or receiver power between dBm and Watts. Enter either value and the other is calculated.</p>' +
+      '<p class="calc-desc">Radio power is expressed in either Watts (absolute) or dBm (decibels relative to 1 milliwatt). dBm makes it easy to add and subtract gains and losses in a chain — just add the dB values. Enter a dBm level (e.g. "43 dBm" for a 20 W transmitter, or "-110 dBm" for a typical receive sensitivity floor) or a Wattage (e.g. "100 W", "0.001 W") and the other value is shown. Common references: 0 dBm = 1 mW, 10 dBm = 10 mW, 30 dBm = 1 W, 43 dBm ≈ 20 W, 50 dBm = 100 W. Receiver sensitivity for amateur FM is typically around −120 dBm.</p>' +
       '<div class="calc-row"><label class="calc-label">dBm</label>' +
         '<input id="calc_pwr_dbm" class="calc-input" placeholder="e.g. 43 dBm (20 W)" oninput="calc_pwr_fromdbm()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Watts</label>' +
@@ -3361,14 +3406,176 @@ function openCalc() {
       '<div id="calc_pwr_res" class="calc-result"></div>' +
       '</div>' +
       '<div class="calc-section"><h4>Doppler Shift</h4>' +
-      '<p class="calc-desc">Calculate the frequency shift caused by relative motion between transmitter and receiver. Positive shift = source approaching; negative = receding.</p>' +
+      '<p class="calc-desc">The Doppler effect shifts the received frequency when the transmitter and receiver are in relative motion. An approaching source raises the observed frequency; a receding source lowers it. Enter a centre frequency (e.g. "145.500 MHz" for a 2 m satellite pass) and a relative velocity (e.g. "7800 m/s" for a LEO satellite, "120 km/h" for a fast car). The result gives the total shift and the actual received frequency at that velocity. The International Space Station orbits at ≈7 700 m/s, producing ≈±3.7 kHz shift on 2 m — you will need to manually tune through the pass or use Doppler-correcting software.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_dop_freq" class="calc-input" placeholder="e.g. 145.500 MHz" oninput="calc_doppler()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Velocity</label>' +
         '<input id="calc_dop_vel" class="calc-input" placeholder="e.g. 7800 m/s or 250 km/h" oninput="calc_doppler()"/></div>' +
       '<div id="calc_dop_res" class="calc-result"></div>' +
-      '<div class="calc-note">Δf = f₀ × v/c &nbsp;(positive = approaching)</div>' +
-      '</div></div>';
+       '<div class="calc-note">Δf = f₀ × v/c &nbsp;(positive = approaching)</div>' +
+       '</div></div>';
+}
+
+function openAntennas() {
+  activeView = 'antennas';
+  activeBand = null;
+  activeSub = null;
+  document.querySelectorAll('.band-btn').forEach(el => el.classList.toggle('active', el.dataset.band === 'antennas'));
+  $('#subPanel').classList.remove('open');
+  const d = $('#detailInner');
+  d.style.display = 'block';
+  $('#emptyState').style.display = 'none';
+  $('#detailPanel').classList.add('open');
+
+  /* ── polar radiation diagram helper ─────────────────────────── */
+  function antSVG(patFn, accentClr, wireNote) {
+    const S = 180, cx = 90, cy = 90, r = 72;
+    let svg = '<svg viewBox="0 0 '+S+' '+S+'" width="'+S+'" height="'+S+'" style="display:block">';
+    /* grid rings */
+    [1,.75,.5,.25].forEach(function(f){
+      svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*f)+'" fill="none" stroke="#1e2840" stroke-width="1"/>';
+    });
+    /* axes */
+    svg += '<line x1="'+cx+'" y1="'+(cy-r-8)+'" x2="'+cx+'" y2="'+(cy+r+8)+'" stroke="#1e2840" stroke-width="1"/>';
+    svg += '<line x1="'+(cx-r-8)+'" y1="'+cy+'" x2="'+(cx+r+8)+'" y2="'+cy+'" stroke="#1e2840" stroke-width="1"/>';
+    /* NSEW labels */
+    svg += '<text x="'+cx+'" y="'+(cy-r-10)+'" text-anchor="middle" fill="#3a4a60" font-size="9" font-family="JetBrains Mono,monospace">N</text>';
+    svg += '<text x="'+cx+'" y="'+(cy+r+18)+'" text-anchor="middle" fill="#3a4a60" font-size="9" font-family="JetBrains Mono,monospace">S</text>';
+    svg += '<text x="'+(cx+r+10)+'" y="'+(cy+3)+'" text-anchor="start" fill="#3a4a60" font-size="9" font-family="JetBrains Mono,monospace">E</text>';
+    svg += '<text x="'+(cx-r-10)+'" y="'+(cy+3)+'" text-anchor="end" fill="#3a4a60" font-size="9" font-family="JetBrains Mono,monospace">W</text>';
+    /* pattern fill */
+    var pts = [];
+    for (var deg = 0; deg < 360; deg += 2) {
+      var rad = deg * Math.PI / 180;
+      var g = Math.max(0, Math.min(1, patFn(deg)));
+      pts.push((cx + r * g * Math.sin(rad)).toFixed(1) + ',' + (cy - r * g * Math.cos(rad)).toFixed(1));
+    }
+    svg += '<polygon points="'+pts.join(' ')+'" fill="'+accentClr+'22" stroke="'+accentClr+'" stroke-width="1.5"/>';
+    /* wire hint */
+    if (wireNote) svg += '<text x="'+cx+'" y="'+(S-4)+'" text-anchor="middle" fill="'+accentClr+'" font-size="8" font-family="JetBrains Mono,monospace">'+wireNote+'</text>';
+    svg += '</svg>';
+    return svg;
+  }
+
+  /* ── antenna definitions ──────────────────────────────────────── */
+  var ants = [
+    {
+      name: 'Half-Wave Dipole',
+      badge: 'WIRE',
+      accent: '#ff66cc',
+      pat: function(d){ var r=d*Math.PI/180; return Math.abs(Math.sin(r)); },
+      wireNote: '← λ/2 →',
+      desc: 'The dipole is the foundational reference antenna. A half-wave dipole is cut to exactly half the operating wavelength and fed at the centre. Its 2.15 dBi gain is the universal benchmark against which all other antennas are measured. Impedance at resonance is ≈73 Ω, a near-perfect match to 75 Ω coax. Build one in minutes from any conductor: house wire, speaker cable, or ladder line.',
+      pros: ['Simple & cheap to build','Near-50/75 Ω feed impedance','Predictable figure-8 pattern','Excellent for portable ops'],
+      cons: ['Omnidirectional in elevation — no gain toward horizon','Length fixed to one band','Needs support at both ends','RF can appear on feedline (choking required)'],
+      best: 'Best for: single-band portable, emergency, or base-station use when directivity is not required.',
+      nullNote: 'Deep nulls off both tips. Orient perpendicular to desired station for peak signal.'
+    },
+    {
+      name: 'Vertical / Ground Plane',
+      badge: 'VERTICAL',
+      accent: '#44ccff',
+      pat: function(d){ return 1.0; },
+      wireNote: 'λ/4 whip',
+      desc: 'A quarter-wave vertical with three or more radials (ground plane) presents a low-angle radiation pattern ideal for DX work. Impedance is ≈36 Ω with horizontal radials — angling them downward at 45° raises it to ≈50 Ω, a direct coax match. Verticals radiate equally in all compass directions, making them popular for mobile, marine, and base-station use where azimuthal coverage matters more than gain.',
+      pros: ['True omnidirectional azimuth','Low-angle radiation for DX','Compact vertical footprint','No matching needed at 50 Ω with angled radials'],
+      cons: ['Low-efficiency without adequate ground system','Local noise pickup from all directions','No azimuth directivity or gain','Nearby objects detune resonance'],
+      best: 'Best for: DX chasing on HF, mobile HF/VHF, marine/aviation where omnidirectional coverage is mandatory.',
+      nullNote: 'Straight overhead (zenith) null — NVIS contacts not possible without modification.'
+    },
+    {
+      name: 'Yagi-Uda',
+      badge: 'DIRECTIONAL',
+      accent: '#aaff33',
+      pat: function(d){ var a=d; if(a>180)a=360-a; return Math.exp(-6.4e-4*a*a)+0.18*Math.exp(-6.4e-4*(a-180)*(a-180)); },
+      wireNote: '→ boom →',
+      desc: 'The Yagi-Uda array uses a driven dipole, one or more reflectors behind it, and multiple directors in front to form a highly directive beam. Gain increases with element count: a 3-element Yagi yields ≈7 dBd, a 10-element ≈14 dBd. Front-to-back ratio is typically 20–30 dB. Boom length and element spacing are carefully calculated — small changes in element length detune the array significantly. Used in VHF/UHF TV reception, EME (moonbounce), satellite, and contest stations.',
+      pros: ['High gain per size on VHF/UHF','Excellent front-to-back ratio','Good noise rejection from rear','Scalable: add directors for more gain'],
+      cons: ['Narrow bandwidth (typically 2–5%)','Mechanically complex to build precisely','Wind loading on long boom','Fixed to one band without retuning'],
+      best: 'Best for: VHF/UHF DX, satellite work, weak-signal EME, contesting where directional gain is critical.',
+      nullNote: 'Sharp rear and side nulls — rotate carefully to avoid missing signals off the back.'
+    },
+    {
+      name: 'Magnetic Loop',
+      badge: 'COMPACT',
+      accent: '#ffaa44',
+      pat: function(d){ var r=d*Math.PI/180; return Math.pow(Math.sin(r),2); },
+      wireNote: 'small loop',
+      desc: 'A small magnetic loop (circumference <0.1λ) uses a high-Q resonant capacitor to tune a large conductor loop. Despite its tiny size, efficiency can reach 80–95% at HF when built carefully. The figure-8 pattern (like a dipole rotated 90°) and sharp deep nulls perpendicular to the loop plane make it excellent for noise rejection. Bandwidth is extremely narrow — retuning is required across even a small portion of a band. Popular for portable, apartment, and stealth installations.',
+      pros: ['Very compact for HF use','Deep null for noise/QRM rejection','Low-profile / stealth installation','Good efficiency if high-Q cap is used'],
+      cons: ['Narrow bandwidth — frequent retuning','High voltage on tuning capacitor at power','Very sensitive to nearby conductive objects','Lower efficiency than full-size antenna'],
+      best: 'Best for: apartment or HOA-restricted installations, portable HF where space is severely limited.',
+      nullNote: 'Perpendicular-to-plane nulls are 30+ dB deep — very effective for rejecting local noise sources.'
+    },
+    {
+      name: 'End-Fed Half-Wave (EFHW)',
+      badge: 'WIRE',
+      accent: '#ff8844',
+      pat: function(d){ var r=d*Math.PI/180; return Math.abs(Math.sin(r)); },
+      wireNote: 'EFHW',
+      desc: 'An EFHW is a half-wave wire fed at the high-impedance end (≈2500–5000 Ω) via a 49:1 or 64:1 unun transformer. The same wire resonates on all harmonic bands (e.g., 40/20/10 m with one wire), making it popular for multi-band use with a single feedline. Because only one end needs support, deployment in the field is much simpler than a centre-fed dipole. The radiation pattern and efficiency closely match a standard half-wave dipole when the antenna and transformer are well-built.',
+      pros: ['Single wire covers multiple harmonic bands','Only one support point required','Simple portable deployment','Near-dipole efficiency when well-matched'],
+      cons: ['Requires 49:1 or 64:1 unun transformer','Common-mode current on feedline without choke','Pattern distorted if wire runs near ground','Transformer becomes lossy if core saturates at QRO'],
+      best: 'Best for: SOTA/POTA portable ops, camping, emergency comms where fast multi-band deployment matters.',
+      nullNote: 'Pattern nearly identical to dipole — deep nulls off both wire tips.'
+    },
+    {
+      name: 'Log-Periodic Dipole Array (LPDA)',
+      badge: 'BROADBAND',
+      accent: '#aa66ff',
+      pat: function(d){ var a=d; if(a>180)a=360-a; return Math.exp(-2e-4*a*a)+0.3*Math.exp(-2e-4*(a-180)*(a-180)); },
+      wireNote: 'LPDA',
+      desc: 'An LPDA uses a series of dipoles of increasing length connected to a transposed feedline. The active region shifts along the boom as frequency changes, maintaining roughly constant gain (6–8 dBd) and impedance across a very wide frequency range — often a decade or more (e.g., 14–30 MHz). Front-to-back ratio is moderate (≈15–20 dB). The design is determined by the tau (τ) and sigma (σ) parameters. HF log-periodics are used in shortwave broadcasting, military HF, and wide-coverage amateur installations.',
+      pros: ['Very wide instantaneous bandwidth','Stable gain and pattern across range','Good front-to-back ratio','No retuning needed across coverage'],
+      cons: ['Lower gain than same-size Yagi at one frequency','Mechanically complex (transposed feed)','Larger boom length for given gain','Heavier and more expensive than Yagi'],
+      best: 'Best for: HF monitoring/listening, wide-band SDR front-ends, shortwave broadcasting, all-band HF stations.',
+      nullNote: 'Rear and side rejection useful but not as deep as Yagi — rotate for best null.'
+    },
+    {
+      name: 'Parabolic Dish',
+      badge: 'MICROWAVE',
+      accent: '#33ccff',
+      pat: function(d){ var a=d; if(a>180)a=360-a; return Math.exp(-0.03*a*a); },
+      wireNote: 'dish',
+      desc: 'A parabolic reflector focuses incoming waves onto a feedhorn at the focal point. Gain scales as (π·D/λ)² × efficiency, meaning a 1-metre dish at 10 GHz delivers over 40 dBi. The half-power beamwidth is extremely narrow — often fractions of a degree — making precise pointing mandatory. Used in satellite uplink/downlink, microwave backhaul, radio astronomy, and EME at UHF/SHF. Efficiency depends heavily on feed design, surface accuracy, and blockage.',
+      pros: ['Exceptional gain at microwave frequencies','Extremely narrow beamwidth for long-range links','Relatively low sidelobe level','Passive — no active elements to fail'],
+      cons: ['Mechanical pointing required — no azimuth coverage','Gain collapses if surface tolerance exceeds λ/16','Very narrow bandwidth relative to absolute frequency','Large wind-loading surface area'],
+      best: 'Best for: satellite ground stations, 10 GHz+ microwave links, EME, radio astronomy.',
+      nullNote: 'Deep sidelobe nulls at 15–25° off boresight — mispointing by even 1° causes significant loss at 10 GHz.'
+    }
+  ];
+
+  var html =
+    '<div class="accent-bar" style="background:' + tc('#ff66cc') + '"></div>' +
+    '<div class="detail-title" style="color:' + tc('#ff66cc') + '">Antenna Guide</div>' +
+    '<div class="detail-subtitle">Radiation patterns · Pros &amp; cons · Dead zones · Use cases</div>';
+
+  ants.forEach(function(a) {
+    html +=
+      '<div class="ant-section">' +
+        '<div class="ant-header">' +
+          '<span class="ant-name" style="color:' + tc(a.accent) + '">' + a.name + '</span>' +
+          '<span class="ant-badge" style="color:' + tc(a.accent) + ';border-color:' + tc(a.accent) + '44;background:' + tc(a.accent) + '18">' + a.badge + '</span>' +
+        '</div>' +
+        '<div class="ant-body">' +
+          '<div class="ant-svg-wrap">' +
+            antSVG(a.pat, tc(a.accent), a.wireNote) +
+            '<span class="ant-svg-label">Azimuth pattern (top view)</span>' +
+          '</div>' +
+          '<div>' +
+            '<div class="ant-desc">' + a.desc + '</div>' +
+            '<div class="ant-best">' + a.best + '</div>' +
+            '<div class="ant-props">' +
+              a.pros.map(function(p){ return '<div class="ant-pro">'+p+'</div>'; }).join('') +
+              a.cons.map(function(c){ return '<div class="ant-con">'+c+'</div>'; }).join('') +
+            '</div>' +
+            '<div class="ant-null-note">&#9685; ' + a.nullNote + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  });
+
+  d.innerHTML = html;
 }
 
 function switchCalcTab(btn, id) {
