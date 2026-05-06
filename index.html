@@ -36,15 +36,20 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── global search ──────────────────────────────────────────────────────── */
+.search-wrap{
+  flex:1;max-width:400px;display:flex;align-items:center;
+  background:#0f1220;border:1px solid #1e2536;border-radius:3px;
+  height:22px;padding:0 6px;gap:5px;transition:border-color .2s,box-shadow .2s;
+}
+.search-wrap:focus-within{border-color:#33ff88;box-shadow:0 0 6px rgba(0,255,136,.2)}
+.search-icon{width:12px;height:12px;color:#4a5a70;flex-shrink:0}
+.search-wrap:focus-within .search-icon{color:#33ff88}
 #globalSearch{
-  flex:1;max-width:400px;height:22px;
-  background:#0f1220;border:1px solid #1e2536;
+  flex:1;height:100%;background:none;border:none;
   color:#c8ccd0;font-family:'JetBrains Mono',monospace;
-  font-size:12px;padding:0 8px;outline:none;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  font-size:12px;padding:0;outline:none;
 }
 #globalSearch::placeholder{color:#4a5a70}
-#globalSearch:focus{border-color:#33ff88;box-shadow:0 0 6px rgba(0,255,136,.2)}
 
 /* ── main content area ─────────────────────────────────────────────────── */
 .main{flex:1;display:flex;overflow:hidden;min-height:0}
@@ -219,7 +224,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 .bc-controls input,.bc-controls select{
   background:#0f1220;border:1px solid #1e2536;color:#c8ccd0;
   font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 8px;outline:none;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  border-radius:3px;
 }
 .bc-controls input[list]{width:180px}
 .bc-controls input[type="text"]:not([list]){width:120px}
@@ -227,8 +232,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   background:linear-gradient(180deg,#1a2e38,#14222c);
   border:1px solid #ff8844;color:#ff8844;
   font-family:'JetBrains Mono',monospace;font-size:12px;
-  padding:5px 14px;cursor:pointer;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  padding:5px 14px;cursor:pointer;border-radius:3px;
 }
 .bc-controls button:hover{background:linear-gradient(180deg,#22384a,#1a2c38)}
 .bc-result-table{width:100%;border-collapse:collapse}
@@ -242,7 +246,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 /* ── calculator panel ───────────────────────────────────────────────────── */
 .calc-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
 .calc-tab{padding:5px 12px;cursor:pointer;font-size:12px;color:#6a7a90;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  border-radius:3px;
   background:linear-gradient(180deg,#13162200,#111420);transition:all .2s;user-select:none}
 .calc-tab:hover{background:linear-gradient(180deg,#1a1e30,#151828);color:#a0b0c8}
 .calc-tab.active{color:#44ccff;background:linear-gradient(180deg,#181e32,#141a2c)}
@@ -251,15 +255,13 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 .calc-form input{
   background:#0f1220;border:1px solid #1e2536;color:#c8ccd0;
   font-family:'JetBrains Mono',monospace;font-size:13px;padding:4px 8px;
-  outline:none;width:160px;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  outline:none;width:160px;border-radius:3px;
 }
 .calc-form button{
   background:linear-gradient(180deg,#1a2e3a,#142230);
   border:1px solid #44ccff;color:#44ccff;
   font-family:'JetBrains Mono',monospace;font-size:12px;
-  padding:5px 14px;cursor:pointer;
-  clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);
+  padding:5px 14px;cursor:pointer;border-radius:3px;
 }
 .calc-form button:hover{background:linear-gradient(180deg,#22384a,#1a2c3a)}
 .calc-result{padding:10px;background:linear-gradient(180deg,#0d1020,#0a0d18);
@@ -267,6 +269,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   font-size:13px;color:#44ccff;line-height:1.9}
 .calc-result .calc-key{color:#9aaabe;font-size:11px;letter-spacing:.5px}
 .calc-note{font-size:11px;color:#5a6a7a;margin-top:8px;line-height:1.5}
+.calc-desc{font-size:12px;color:#7a8a9e;line-height:1.5;margin-bottom:10px}
 
 /* ── search panel ───────────────────────────────────────────────────────── */
 .search-results{display:flex;flex-direction:column;gap:0}
@@ -302,7 +305,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   .detail-table td{font-size:13px}
   .glossary-grid{grid-template-columns:1fr}
   .glossary-item:nth-child(odd){border-right:none}
-  #globalSearch{max-width:200px}
+  .search-wrap{max-width:200px}
 }
 
 /* ── responsive: mobile ─────────────────────────────────────────────────── */
@@ -323,7 +326,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   .detail-inner{padding:8px}
   .glossary-grid{grid-template-columns:1fr}
   .glossary-item:nth-child(odd){border-right:none}
-  #globalSearch{display:none}
+  .search-wrap{display:none}
 }
 
 /* ── theme toggle button ────────────────────────────────────────────────── */
@@ -345,9 +348,12 @@ html.light .top-bar{background:linear-gradient(90deg,#e6e8ee,#eaecf1);border-bot
 html.light .top-bar .title{color:#00885a}
 html.light .top-bar .range{color:#5a6878}
 html.light .top-bar .dot{background:#00885a;box-shadow:0 0 6px #00885a}
-html.light #globalSearch{background:#e8eaf0;border-color:#c0c8d4;color:#2a3040}
+html.light .search-wrap{background:#e8eaf0;border-color:#c0c8d4}
+html.light .search-wrap:focus-within{border-color:#00885a;box-shadow:0 0 6px rgba(0,136,90,.2)}
+html.light .search-icon{color:#8a9aaa}
+html.light .search-wrap:focus-within .search-icon{color:#00885a}
+html.light #globalSearch{background:none;color:#2a3040}
 html.light #globalSearch::placeholder{color:#8a9aaa}
-html.light #globalSearch:focus{border-color:#00885a;box-shadow:0 0 6px rgba(0,136,90,.2)}
 
 /* band panel */
 html.light .band-panel{background:linear-gradient(180deg,#e6e8ee,#e8eaef);border-right-color:#c8cdd8}
@@ -461,6 +467,7 @@ html.light .calc-form button{background:linear-gradient(180deg,#e0e8f0,#d8e0ea);
 html.light .calc-result{background:linear-gradient(180deg,#f0f2f8,#eaecf2);border-color:#c0c8d4;color:#1155cc}
 html.light .calc-result .calc-key{color:#5a6878}
 html.light .calc-note{color:#7a8a9a}
+html.light .calc-desc{color:#5a6878}
 
 /* search light */
 html.light .search-section-title{color:#117711;border-bottom-color:#d0d5e0}
@@ -483,9 +490,9 @@ html.light .ripple{background:rgba(0,0,0,.08)}
 /* ── BC panel ── */
 .bc-row{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
 .bc-label{font-size:11px;color:#9aaabe;letter-spacing:.5px;text-transform:uppercase}
-.bc-input{background:linear-gradient(180deg,#0d1020,#090c18);border:1px solid #1e2840;color:#c8ccd0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;width:260px;max-width:100%;outline:none;transition:border-color .2s}
+.bc-input{background:linear-gradient(180deg,#0d1020,#090c18);border:1px solid #1e2840;color:#c8ccd0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;width:260px;max-width:100%;outline:none;transition:border-color .2s;border-radius:3px}
 .bc-input:focus{border-color:#ff8844}
-.bc-btn{margin-top:4px;padding:6px 18px;cursor:pointer;background:linear-gradient(180deg,#1a2c3a,#121e2c);border:1px solid #ff8844;color:#ff8844;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.5px;transition:background .2s,color .2s}
+.bc-btn{padding:6px 18px;cursor:pointer;background:linear-gradient(180deg,#1a2c3a,#121e2c);border:1px solid #ff8844;color:#ff8844;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.5px;transition:background .2s,color .2s;border-radius:3px}
 .bc-btn:hover{background:linear-gradient(180deg,#22384a,#1a2c38);color:#ffaa66}
 .bc-results{margin-top:12px}
 .bc-empty{color:#6a7a8e;font-size:13px;padding:16px 0;letter-spacing:.5px}
@@ -511,7 +518,7 @@ html.light .bc-meta{color:#7a8a9a}
 .calc-section h4{font-size:12px;font-weight:700;color:#44ccff;letter-spacing:1px;text-transform:uppercase;margin:0 0 10px 0}
 .calc-row{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
 .calc-label{font-size:11px;color:#9aaabe;letter-spacing:.5px;text-transform:uppercase}
-.calc-input{background:linear-gradient(180deg,#0d1020,#090c18);border:1px solid #1e2840;color:#c8ccd0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;width:220px;max-width:100%;outline:none;transition:border-color .2s}
+.calc-input{background:linear-gradient(180deg,#0d1020,#090c18);border:1px solid #1e2840;color:#c8ccd0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;width:220px;max-width:100%;outline:none;transition:border-color .2s;border-radius:3px}
 .calc-input:focus{border-color:#44ccff}
 .calc-ans{color:#44ccff;font-size:13px}
 html.light .calc-section h4{color:#1155cc}
@@ -538,7 +545,7 @@ html.light .search-count{color:#7a8a9a}
     <div class="dot"></div>
     <button class="title" onclick="goHome()">Radio Frequency Spectrum</button>
     <span class="range">15 kHz — 5 GHz</span>
-    <input id="globalSearch" type="search" placeholder="⌕ search bands, terms, freqs…" autocomplete="off" spellcheck="false">
+    <div class="search-wrap"><svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4"/><line x1="10" y1="10" x2="14" y2="14"/></svg><input id="globalSearch" type="search" placeholder="search bands, terms, freqs…" autocomplete="off" spellcheck="false"></div>
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark mode">
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -3179,7 +3186,10 @@ function openBroadcast() {
         '<label class="bc-label">UTC time (optional)</label>' +
         '<input id="bcTime" class="bc-input" placeholder="HH:MM — leave blank for current UTC" autocomplete="off"/>' +
       '</div>' +
-      '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
+      '<div class="bc-row">' +
+        '<label class="bc-label">&nbsp;</label>' +
+        '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
+      '</div>' +
     '</div>' +
     '<div id="bcResults" class="bc-results"></div>';
 }
@@ -3312,6 +3322,7 @@ function openCalc() {
     /* Wavelength panel */
     '<div class="calc-panel" id="calcPanel_wl">' +
       '<div class="calc-section"><h4>Wavelength ↔ Frequency</h4>' +
+      '<p class="calc-desc">Convert between frequency and free-space wavelength. Enter a frequency or a wavelength — the other value is calculated instantly.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_wl_freq" class="calc-input" placeholder="e.g. 14.074 MHz" oninput="calc_wl()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Wavelength</label>' +
@@ -3322,6 +3333,7 @@ function openCalc() {
     /* Dipole panel */
     '<div class="calc-panel" id="calcPanel_ant" style="display:none">' +
       '<div class="calc-section"><h4>Half-Wave Dipole</h4>' +
+      '<p class="calc-desc">Calculate the physical length of a half-wave dipole or quarter-wave vertical for any frequency. Uses a velocity factor of 0.95 for real wire.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_ant_freq" class="calc-input" placeholder="e.g. 14.2 MHz" oninput="calc_ant()"/></div>' +
       '<div id="calc_ant_res" class="calc-result"></div>' +
@@ -3330,6 +3342,7 @@ function openCalc() {
     /* FSPL panel */
     '<div class="calc-panel" id="calcPanel_fspl" style="display:none">' +
       '<div class="calc-section"><h4>Free-Space Path Loss</h4>' +
+      '<p class="calc-desc">Estimate signal attenuation due to the spreading of radio waves over distance in free space. Essential for link budget calculations.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_fspl_freq" class="calc-input" placeholder="e.g. 2.4 GHz" oninput="calc_fspl()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Distance</label>' +
@@ -3340,6 +3353,7 @@ function openCalc() {
     /* Power/Doppler panel */
     '<div class="calc-panel" id="calcPanel_pwr" style="display:none">' +
       '<div class="calc-section"><h4>Power Conversion — dBm ↔ Watts</h4>' +
+      '<p class="calc-desc">Convert transmitter or receiver power between dBm and Watts. Enter either value and the other is calculated.</p>' +
       '<div class="calc-row"><label class="calc-label">dBm</label>' +
         '<input id="calc_pwr_dbm" class="calc-input" placeholder="e.g. 43 dBm (20 W)" oninput="calc_pwr_fromdbm()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Watts</label>' +
@@ -3347,6 +3361,7 @@ function openCalc() {
       '<div id="calc_pwr_res" class="calc-result"></div>' +
       '</div>' +
       '<div class="calc-section"><h4>Doppler Shift</h4>' +
+      '<p class="calc-desc">Calculate the frequency shift caused by relative motion between transmitter and receiver. Positive shift = source approaching; negative = receding.</p>' +
       '<div class="calc-row"><label class="calc-label">Frequency</label>' +
         '<input id="calc_dop_freq" class="calc-input" placeholder="e.g. 145.500 MHz" oninput="calc_doppler()"/></div>' +
       '<div class="calc-row"><label class="calc-label">Velocity</label>' +
@@ -3513,6 +3528,17 @@ function openSearch(query) {
 
   html += '<div class="search-count">' + total + ' result' + (total!==1?'s':'') + '</div>';
 
+  if (glossResults.length) {
+    html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#88ccff')+'">Glossary ('+glossResults.length+')</h4>';
+    glossResults.slice(0,20).forEach(function(item) {
+      html += '<div class="search-item" onclick="openGlossary()">' +
+        '<div class="search-item-title">'+item.term+'</div>' +
+        '<div class="search-item-sub">'+item.def+'</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  }
+
   if (bandResults.length) {
     html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#88ff66')+'">Bands &amp; Sub-bands ('+bandResults.length+')</h4>';
     bandResults.slice(0,30).forEach(function(r) {
@@ -3528,17 +3554,6 @@ function openSearch(query) {
           '<div class="search-item-sub">'+r.band.range+'</div>' +
           '</div>';
       }
-    });
-    html += '</div>';
-  }
-
-  if (glossResults.length) {
-    html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#88ccff')+'">Glossary ('+glossResults.length+')</h4>';
-    glossResults.slice(0,20).forEach(function(item) {
-      html += '<div class="search-item" onclick="openGlossary()">' +
-        '<div class="search-item-title">'+item.term+'</div>' +
-        '<div class="search-item-sub">'+item.def+'</div>' +
-        '</div>';
     });
     html += '</div>';
   }
