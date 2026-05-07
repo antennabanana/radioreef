@@ -4460,9 +4460,10 @@ document.addEventListener('keydown', e => {
     if (e.key === 'l' || e.key === 'L') { if (!isLight()) { toggleTheme(); } return; }
   }
 
-  /* 'Escape' → return to home/intro */
-  if (e.key === 'Escape' && !inInput) {
+  /* 'Escape' → return to home/intro (works even when an input is focused) */
+  if (e.key === 'Escape') {
     e.preventDefault();
+    if (document.activeElement) document.activeElement.blur();
     goHome();
     return;
   }
