@@ -2874,9 +2874,20 @@ function showIntro(){
      '<div class="intro-line"><span class="key">↑</span> <span class="key">↓</span> hop between bands &amp; tabs — works from here too</div>'+
      '<div class="intro-line"><span class="key">→</span> enter · <span class="key">↑</span><span class="key">↓</span><span class="key">→</span> browse sub‑bands</div>'+
      '<div class="intro-line"><span class="key">←</span> back to band from any sub‑band</div>'+
-     '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode</div>'+
+     '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode · <span class="key">Esc</span> home</div>'+
      '<div class="intro-sep"></div>'+
      '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas)</div>';
+}
+
+function goHome() {
+  activeView = null;
+  activeBand = null;
+  activeSub = null;
+  document.querySelectorAll('.band-btn').forEach(el => el.classList.remove('active'));
+  $('#subPanel').classList.remove('open');
+  $('#detailPanel').classList.remove('open');
+  $('#detailInner').style.display = 'none';
+  showIntro();
 }
 
 /* ── count total sub-bands ───────────────────────────────── */
@@ -3216,20 +3227,16 @@ function openBroadcast() {
   d.innerHTML =
     '<div class="accent-bar" style="background:' + tc('#ff8844') + '"></div>' +
     '<div class="detail-title" style="color:' + tc('#ff8844') + '">Shortwave Broadcast Finder</div>' +
-    '<div class="detail-subtitle">Find EiBi A26 shortwave broadcasts targetted at a location at a given UTC time</div>' +
+    '<div class="detail-subtitle">Find EiBi A26 shortwave broadcasts targetted at a location</div>' +
     '<div class="bc-controls">' +
       '<div class="bc-row">' +
         '<label class="bc-label">City / location</label>' +
-        '<input id="bcCity" class="bc-input" list="cityList" placeholder="e.g. London, Tokyo, Cairo" autocomplete="off"/>' +
+        '<input id="bcCity" class="bc-input" list="cityList" placeholder="e.g. London, Tokyo, Cairo — blank for all" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
         datalistHtml +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">Frequency (optional)</label>' +
-        '<input id="bcFreq" class="bc-input" placeholder="e.g. 9410 kHz or 9.41 MHz — blank for all" autocomplete="off"/>' +
-      '</div>' +
-      '<div class="bc-row">' +
-        '<label class="bc-label">UTC time (optional)</label>' +
-        '<input id="bcTime" class="bc-input" placeholder="HH:MM — leave blank for current UTC" autocomplete="off"/>' +
+        '<input id="bcFreq" class="bc-input" placeholder="e.g. 7, 9410, 14.074 MHz — prefix or exact" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">&nbsp;</label>' +
@@ -3242,57 +3249,54 @@ function openBroadcast() {
 function runBroadcast() {
   var cityInput = (($('#bcCity') && $('#bcCity').value) || '').trim();
   var freqInput = (($('#bcFreq') && $('#bcFreq').value) || '').trim();
-  var timeInput = (($('#bcTime') && $('#bcTime').value) || '').trim();
   var results   = document.getElementById('bcResults');
   if (!results) return;
 
-  if (!cityInput) {
-    results.innerHTML = '<div class="bc-empty">Enter a city name to search.</div>';
-    return;
+  /* ── find city in CITY_MAP (optional) ── */
+  var city = null;
+  if (cityInput) {
+    var cityName = cityInput.replace(/\s*\(.*\)$/, '').trim().toLowerCase();
+    city = CITY_MAP.find(function(c){ return c.name.toLowerCase() === cityName; });
+    if (!city) city = CITY_MAP.find(function(c){ return c.name.toLowerCase().startsWith(cityName); });
+    if (!city) {
+      results.innerHTML = '<div class="bc-empty">City "<strong>' + cityInput + '</strong>" not found. Try a capital city or major city name.</div>';
+      return;
+    }
   }
 
-  /* ── find city in CITY_MAP ── */
-  var cityName = cityInput.replace(/\s*\(.*\)$/, '').trim().toLowerCase();
-  var city = CITY_MAP.find(function(c){ return c.name.toLowerCase() === cityName; });
-  if (!city) city = CITY_MAP.find(function(c){ return c.name.toLowerCase().startsWith(cityName); });
-  if (!city) {
-    results.innerHTML = '<div class="bc-empty">City "<strong>' + cityInput + '</strong>" not found. Try a capital city or major city name.</div>';
-    return;
+  /* ── parse freq filter: prefix match or exact (when unit given) ── */
+  var freqFilter = null;
+  if (freqInput) {
+    if (/[GMk]Hz/i.test(freqInput)) {
+      /* explicit unit → exact ±1 kHz */
+      var khzExact = _parseFreqToKhz(freqInput);
+      if (khzExact !== null) freqFilter = { exact: khzExact };
+    } else {
+      var stripped = freqInput.replace(/[^\d.]/g, '');
+      if (stripped) {
+        if (stripped.indexOf('.') >= 0) {
+          /* decimal without unit: treat as MHz if < 30, else kHz */
+          var n = parseFloat(stripped);
+          if (!isNaN(n)) freqFilter = { prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
+        } else {
+          /* plain digits → prefix of kHz string */
+          freqFilter = { prefix: stripped };
+        }
+      }
+    }
   }
-
-  /* ── parse time ── */
-  var timeNum;
-  if (timeInput) {
-    var clean = timeInput.replace(':', '').replace(/\s/g,'').padStart(4,'0');
-    timeNum = parseInt(clean, 10);
-    if (isNaN(timeNum)) timeNum = null;
-  }
-  if (timeNum == null) {
-    var now = new Date();
-    timeNum = now.getUTCHours() * 100 + now.getUTCMinutes();
-  }
-
-  /* ── EiBi day (1=Mon…7=Sun) ── */
-  var jsDay = new Date().getUTCDay();
-  var eibiDay = jsDay === 0 ? 7 : jsDay;
-
-  /* ── parse freq filter ── */
-  var freqFilterKhz = freqInput ? _parseFreqToKhz(freqInput) : null;
 
   /* ── filter EIBI ── */
-  var targets = city.targets;
+  var targets = city ? city.targets : null;
   var filtered = EIBI.filter(function(e) {
     /* e = [freq_khz, start_hhmm, end_hhmm, days, itu, station, lang, target] */
-    if (!targets.some(function(t){ return e[7] === t; })) return false;
-    var start = e[1], end = e[2];
-    var active = start <= end ? (timeNum >= start && timeNum < end) : (timeNum >= start || timeNum < end);
-    if (!active) return false;
-    var days = e[3];
-    if (days && days !== '' && days !== '1234567') {
-      if (days.indexOf(String(eibiDay)) < 0) return false;
-    }
-    if (freqFilterKhz !== null) {
-      if (Math.abs(e[0] - freqFilterKhz) > 1) return false;
+    if (targets && !targets.some(function(t){ return e[7] === t; })) return false;
+    if (freqFilter !== null) {
+      if (freqFilter.exact !== undefined) {
+        if (Math.abs(e[0] - freqFilter.exact) > 1) return false;
+      } else {
+        if (!String(Math.round(e[0])).startsWith(freqFilter.prefix)) return false;
+      }
     }
     return true;
   });
@@ -3302,12 +3306,15 @@ function runBroadcast() {
   var more    = filtered.length > 200;
 
   if (!limited.length) {
-    results.innerHTML = '<div class="bc-empty">No broadcasts found for <strong>' + city.name + '</strong> at ' + fmtTimeNum(timeNum) + ' UTC. Try a different time.</div>';
+    results.innerHTML = '<div class="bc-empty">No broadcasts found' +
+      (city ? ' for <strong>' + city.name + '</strong>' : '') +
+      (freqFilter ? ' matching <strong>' + freqInput + '</strong>' : '') +
+      '.</div>';
     return;
   }
 
   var html = '<div class="bc-meta">Showing ' + limited.length + (more ? ' of ' + filtered.length : '') +
-    ' broadcasts for <strong>' + city.name + '</strong> at ' + fmtTimeNum(timeNum) + ' UTC</div>';
+    ' broadcasts' + (city ? ' for <strong>' + city.name + '</strong>' : '') + '</div>';
   html += '<table class="bc-table"><tr><th>Freq</th><th>Station</th><th>Lang</th><th>Time (UTC)</th><th>Days</th><th>ITU</th></tr>';
   limited.forEach(function(e) {
     html += '<tr><td class="bc-freq">' + fmtFreqKhz(e[0]) + '</td><td>' + e[5] +
@@ -3315,7 +3322,7 @@ function runBroadcast() {
       '</td><td>' + formatDays(e[3]) + '</td><td>' + e[4] + '</td></tr>';
   });
   html += '</table>';
-  if (more) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — add a frequency to narrow results</div>';
+  if (more) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — narrow by city or frequency</div>';
   results.innerHTML = html;
 }
 
@@ -4451,6 +4458,14 @@ document.addEventListener('keydown', e => {
   if (!inInput) {
     if (e.key === 'd' || e.key === 'D') { if (isLight())  { toggleTheme(); } return; }
     if (e.key === 'l' || e.key === 'L') { if (!isLight()) { toggleTheme(); } return; }
+  }
+
+  /* 'Escape' → return to home/intro (works even when an input is focused) */
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    if (document.activeElement) document.activeElement.blur();
+    goHome();
+    return;
   }
 
   const allTabs = [
