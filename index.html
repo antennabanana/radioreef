@@ -3231,12 +3231,12 @@ function openBroadcast() {
     '<div class="bc-controls">' +
       '<div class="bc-row">' +
         '<label class="bc-label">City / location</label>' +
-        '<input id="bcCity" class="bc-input" list="cityList" placeholder="e.g. London, Tokyo, Cairo — blank for all" autocomplete="off"/>' +
+        '<input id="bcCity" class="bc-input" list="cityList" placeholder="e.g. London, Tokyo, Cairo — blank for all" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
         datalistHtml +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">Frequency (optional)</label>' +
-        '<input id="bcFreq" class="bc-input" placeholder="e.g. 7, 9410, 14.074 MHz — prefix or exact" autocomplete="off"/>' +
+        '<input id="bcFreq" class="bc-input" placeholder="e.g. 7, 9410, 14.074 MHz — prefix or exact" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">&nbsp;</label>' +
