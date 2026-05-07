@@ -3227,7 +3227,7 @@ function openBroadcast() {
   d.innerHTML =
     '<div class="accent-bar" style="background:' + tc('#ff8844') + '"></div>' +
     '<div class="detail-title" style="color:' + tc('#ff8844') + '">Shortwave Broadcast Finder</div>' +
-    '<div class="detail-subtitle">Find EiBi A26 shortwave broadcasts targetted at a location at a given UTC time</div>' +
+    '<div class="detail-subtitle">Find EiBi A26 shortwave broadcasts targetted at a location</div>' +
     '<div class="bc-controls">' +
       '<div class="bc-row">' +
         '<label class="bc-label">City / location</label>' +
@@ -3236,11 +3236,7 @@ function openBroadcast() {
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">Frequency (optional)</label>' +
-        '<input id="bcFreq" class="bc-input" placeholder="e.g. 9410 kHz or 9.41 MHz — blank for all" autocomplete="off"/>' +
-      '</div>' +
-      '<div class="bc-row">' +
-        '<label class="bc-label">UTC time (optional)</label>' +
-        '<input id="bcTime" class="bc-input" placeholder="HH:MM — leave blank for current UTC" autocomplete="off"/>' +
+        '<input id="bcFreq" class="bc-input" placeholder="e.g. 7, 9410, 14.074 MHz — prefix or exact" autocomplete="off"/>' +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">&nbsp;</label>' +
@@ -3253,7 +3249,6 @@ function openBroadcast() {
 function runBroadcast() {
   var cityInput = (($('#bcCity') && $('#bcCity').value) || '').trim();
   var freqInput = (($('#bcFreq') && $('#bcFreq').value) || '').trim();
-  var timeInput = (($('#bcTime') && $('#bcTime').value) || '').trim();
   var results   = document.getElementById('bcResults');
   if (!results) return;
 
@@ -3269,39 +3264,39 @@ function runBroadcast() {
     }
   }
 
-  /* ── parse time ── */
-  var timeNum;
-  if (timeInput) {
-    var clean = timeInput.replace(':', '').replace(/\s/g,'').padStart(4,'0');
-    timeNum = parseInt(clean, 10);
-    if (isNaN(timeNum)) timeNum = null;
+  /* ── parse freq filter: prefix match or exact (when unit given) ── */
+  var freqFilter = null;
+  if (freqInput) {
+    if (/[GMk]Hz/i.test(freqInput)) {
+      /* explicit unit → exact ±1 kHz */
+      var khzExact = _parseFreqToKhz(freqInput);
+      if (khzExact !== null) freqFilter = { exact: khzExact };
+    } else {
+      var stripped = freqInput.replace(/[^\d.]/g, '');
+      if (stripped) {
+        if (stripped.indexOf('.') >= 0) {
+          /* decimal without unit: treat as MHz if < 30, else kHz */
+          var n = parseFloat(stripped);
+          if (!isNaN(n)) freqFilter = { prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
+        } else {
+          /* plain digits → prefix of kHz string */
+          freqFilter = { prefix: stripped };
+        }
+      }
+    }
   }
-  if (timeNum == null) {
-    var now = new Date();
-    timeNum = now.getUTCHours() * 100 + now.getUTCMinutes();
-  }
-
-  /* ── EiBi day (1=Mon…7=Sun) ── */
-  var jsDay = new Date().getUTCDay();
-  var eibiDay = jsDay === 0 ? 7 : jsDay;
-
-  /* ── parse freq filter ── */
-  var freqFilterKhz = freqInput ? _parseFreqToKhz(freqInput) : null;
 
   /* ── filter EIBI ── */
   var targets = city ? city.targets : null;
   var filtered = EIBI.filter(function(e) {
     /* e = [freq_khz, start_hhmm, end_hhmm, days, itu, station, lang, target] */
     if (targets && !targets.some(function(t){ return e[7] === t; })) return false;
-    var start = e[1], end = e[2];
-    var active = start <= end ? (timeNum >= start && timeNum < end) : (timeNum >= start || timeNum < end);
-    if (!active) return false;
-    var days = e[3];
-    if (days && days !== '' && days !== '1234567') {
-      if (days.indexOf(String(eibiDay)) < 0) return false;
-    }
-    if (freqFilterKhz !== null) {
-      if (Math.abs(e[0] - freqFilterKhz) > 1) return false;
+    if (freqFilter !== null) {
+      if (freqFilter.exact !== undefined) {
+        if (Math.abs(e[0] - freqFilter.exact) > 1) return false;
+      } else {
+        if (!String(Math.round(e[0])).startsWith(freqFilter.prefix)) return false;
+      }
     }
     return true;
   });
@@ -3312,14 +3307,14 @@ function runBroadcast() {
 
   if (!limited.length) {
     results.innerHTML = '<div class="bc-empty">No broadcasts found' +
-      (city ? ' for <strong>' + city.name + '</strong>' : ' worldwide') +
-      ' at ' + fmtTimeNum(timeNum) + ' UTC. Try a different time.</div>';
+      (city ? ' for <strong>' + city.name + '</strong>' : '') +
+      (freqFilter ? ' matching <strong>' + freqInput + '</strong>' : '') +
+      '.</div>';
     return;
   }
 
   var html = '<div class="bc-meta">Showing ' + limited.length + (more ? ' of ' + filtered.length : '') +
-    ' broadcasts' + (city ? ' for <strong>' + city.name + '</strong>' : ' worldwide') +
-    ' at ' + fmtTimeNum(timeNum) + ' UTC</div>';
+    ' broadcasts' + (city ? ' for <strong>' + city.name + '</strong>' : '') + '</div>';
   html += '<table class="bc-table"><tr><th>Freq</th><th>Station</th><th>Lang</th><th>Time (UTC)</th><th>Days</th><th>ITU</th></tr>';
   limited.forEach(function(e) {
     html += '<tr><td class="bc-freq">' + fmtFreqKhz(e[0]) + '</td><td>' + e[5] +
@@ -3327,7 +3322,7 @@ function runBroadcast() {
       '</td><td>' + formatDays(e[3]) + '</td><td>' + e[4] + '</td></tr>';
   });
   html += '</table>';
-  if (more) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — add a frequency to narrow results</div>';
+  if (more) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — narrow by city or frequency</div>';
   results.innerHTML = html;
 }
 
