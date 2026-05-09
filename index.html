@@ -143,6 +143,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .detail-inner{padding:12px 16px;overflow-y:auto;flex:1;min-height:0}
 .detail-inner::-webkit-scrollbar{width:3px}
 .detail-inner::-webkit-scrollbar-thumb{background:#1e2536;border-radius:2px}
+.detail-inner.content-focused{box-shadow:inset 0 0 0 1px rgba(51,255,136,.25);outline:none}
 
 /* detail: header */
 .detail-title{font-size:20px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
@@ -452,6 +453,7 @@ html.light .sub-btn.active .sub-freq{color:#4a5868}
 /* detail panel */
 html.light .detail-panel{background:linear-gradient(135deg,#f0f2f6,#eceff3)}
 html.light .detail-inner::-webkit-scrollbar-thumb{background:#c8cdd8}
+html.light .detail-inner.content-focused{box-shadow:inset 0 0 0 1px rgba(0,136,74,.25)}
 html.light .detail-subtitle{color:#5a6878}
 html.light .detail-table th{color:#4a6080;border-bottom-color:#d0d5e0}
 html.light .detail-table td{color:#2a3040;border-bottom-color:#e0e4ec}
@@ -2838,6 +2840,7 @@ const EIBI=[[16.3,0,2400,"","IND","VTX1 Indian Navy","","SAs"],[16.4,0,2400,"","
 let activeView = 'intro';   /* 'intro'|'band'|'glossary'|'propagation'|'broadcast'|'calc'|'search' */
 let activeBand = null;      /* band id string | null */
 let activeSub  = null;      /* sub-band name string | null */
+let contentFocused = false; /* true while Right-arrow scrolls #detailInner */
 let lastSearchQuery = '';
 
 const $ = s => document.querySelector(s);
@@ -2896,17 +2899,6 @@ function showIntro(){
      '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode · <span class="key">Esc</span> home</div>'+
      '<div class="intro-sep"></div>'+
      '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas)</div>';
-}
-
-function goHome() {
-  activeView = null;
-  activeBand = null;
-  activeSub = null;
-  document.querySelectorAll('.band-btn').forEach(el => el.classList.remove('active'));
-  $('#subPanel').classList.remove('open');
-  $('#detailPanel').classList.remove('open');
-  $('#detailInner').style.display = 'none';
-  showIntro();
 }
 
 /* ── count total sub-bands ───────────────────────────────── */
@@ -3211,6 +3203,7 @@ function openPropagation() {
    HOME
    ══════════════════════════════════════════════════════════════ */
 function goHome() {
+  blurContent();
   activeView = 'intro';
   activeBand = null;
   activeSub  = null;
@@ -3220,6 +3213,16 @@ function goHome() {
   $('#detailInner').style.display = 'none';
   $('#emptyState').style.display = 'flex';
   showIntro();
+}
+
+function focusContent() {
+  contentFocused = true;
+  $('#detailInner').classList.add('content-focused');
+}
+function blurContent() {
+  contentFocused = false;
+  const el = $('#detailInner');
+  if (el) el.classList.remove('content-focused');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4554,6 +4557,16 @@ document.addEventListener('keydown', e => {
   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
   if (!isArrow) return;
 
+  /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
+  if (contentFocused) {
+    e.preventDefault();
+    if (e.key === 'ArrowLeft') { blurContent(); return; }
+    const inner = $('#detailInner');
+    if (e.key === 'ArrowDown') inner.scrollBy(0, 100);
+    else if (e.key === 'ArrowUp') inner.scrollBy(0, -100);
+    return;
+  }
+
   /* ── Sub-band level: a sub is active ── */
   if (activeView === 'band' && activeSub) {
     e.preventDefault();
@@ -4571,7 +4584,8 @@ document.addEventListener('keydown', e => {
     if (band) {
       const subs = band.subs;
       let subIdx = subs.findIndex(s => s.name === activeSub);
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') subIdx = Math.min(subIdx + 1, subs.length - 1);
+      if (e.key === 'ArrowRight') { focusContent(); return; }
+      if (e.key === 'ArrowDown') subIdx = Math.min(subIdx + 1, subs.length - 1);
       else subIdx = Math.max(subIdx - 1, 0); /* ArrowUp */
       const subBtns = document.querySelectorAll('#subInner .sub-btn');
       if (subBtns[subIdx]) selectSub(band, subs[subIdx], subBtns[subIdx]);
@@ -4600,13 +4614,18 @@ document.addEventListener('keydown', e => {
     else                                 selectBand(tab.data);
   }
 
-  /* ── Band level: Right enters first sub-band ── */
-  if (e.key === 'ArrowRight' && activeView === 'band' && !activeSub) {
-    const band = BANDS.find(b => b.id === activeBand);
-    if (!band) return;
+  /* ── ArrowRight: enter content or first sub-band ── */
+  if (e.key === 'ArrowRight' && activeView !== 'intro' && activeView !== null && !activeSub) {
     e.preventDefault();
-    const subBtns = document.querySelectorAll('#subInner .sub-btn');
-    if (subBtns[0]) selectSub(band, band.subs[0], subBtns[0]);
+    if (activeView === 'band') {
+      const band = BANDS.find(b => b.id === activeBand);
+      if (!band) return;
+      const subBtns = document.querySelectorAll('#subInner .sub-btn');
+      if (subBtns[0]) selectSub(band, band.subs[0], subBtns[0]);
+      else focusContent();
+    } else {
+      focusContent();
+    }
   }
 });
 </script>
