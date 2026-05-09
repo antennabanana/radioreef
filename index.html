@@ -319,13 +319,30 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   .band-panel{flex:0 0 100px;padding:5px 4px;gap:3px}
   .band-btn .label{font-size:14px}
   .band-btn .freq{font-size:8px}
-  .sub-panel.open{flex-basis:175px}
-  .sub-btn{font-size:12px;padding:4px 6px}
+  .sub-panel.open{flex-basis:210px}
+  .sub-btn{font-size:12px;padding:4px 6px;white-space:normal;overflow:visible;text-overflow:clip}
   .detail-table th{font-size:11px}
   .detail-table td{font-size:13px}
   .glossary-grid{grid-template-columns:1fr}
   .glossary-item:nth-child(odd){border-right:none}
   .search-wrap{max-width:200px}
+}
+
+/* ── responsive: landscape phone (short viewport) ───────────────────────── */
+@media(max-height:500px) and (orientation:landscape){
+  .app{overflow-y:auto}
+  .main{flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .band-panel{flex:0 0 auto;flex-direction:row;justify-content:flex-start;overflow-x:auto;padding:4px;gap:4px;border-right:none;border-bottom:1px solid #1a1f2e}
+  .band-btn{min-width:52px;padding:4px 6px}
+  .band-btn .label{font-size:13px}
+  .band-btn .freq{display:none}
+  .band-sep{width:1px;height:auto;margin:2px 0;min-height:16px}
+  .sub-panel{flex:0 0 0;border-right:none;border-bottom:1px solid #1a1f2e;transition:flex-basis .3s,opacity .25s}
+  .sub-panel.open{flex-basis:auto}
+  .sub-panel-inner{flex-direction:row;flex-wrap:wrap;overflow-y:visible;padding:4px}
+  .sub-btn{flex:0 0 auto;font-size:12px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+  .detail-panel{flex:1 1 auto;overflow-y:auto}
+  .top-bar .range{display:none}
 }
 
 /* ── responsive: mobile ─────────────────────────────────────────────────── */
@@ -566,6 +583,8 @@ html.light .calc-ans{color:#1155cc}
 .search-query{font-size:12px;color:#9aaabe;margin-bottom:6px;letter-spacing:.5px}
 .search-count{font-size:11px;color:#5a6a7a;margin-bottom:12px;letter-spacing:.5px}
 .search-section{margin-bottom:16px}
+.search-input-row{margin-bottom:12px}
+.search-input-row .bc-input{width:100%;max-width:none}
 html.light .search-empty{color:#8a94a0}
 html.light .search-query{color:#5a6878}
 html.light .search-count{color:#7a8a9a}
@@ -3690,14 +3709,145 @@ function openSearch(query) {
 
   var q = (query || '').trim().toLowerCase();
 
-  var html = '<div class="accent-bar" style="background:' + tc('#88ff66') + '"></div>' +
-    '<div class="detail-title" style="color:' + tc('#88ff66') + '">Search</div>';
+  /* preserve panel-input cursor across re-renders (theme toggle, top-bar sync) */
+  var prevInp  = document.getElementById('searchPanelInput');
+  var selStart = prevInp ? prevInp.selectionStart : q.length;
+  var selEnd   = prevInp ? prevInp.selectionEnd   : q.length;
+  var hadFocus = prevInp && (document.activeElement === prevInp);
+  var isFirst  = !prevInp;
+
+  var safeQ = (query || '').replace(/"/g, '&quot;');
+  d.innerHTML =
+    '<div class="accent-bar" style="background:' + tc('#88ff66') + '"></div>' +
+    '<div class="detail-title" style="color:' + tc('#88ff66') + '">Search</div>' +
+    '<div class="search-input-row">' +
+      '<input id="searchPanelInput" class="bc-input" ' +
+        'placeholder="Type a term, frequency, or mode\u2026" autocomplete="off" spellcheck="false" ' +
+        'value="' + safeQ + '" ' +
+        'oninput="_panelSearchInput(this.value)" ' +
+        'onkeydown="if(event.key===\'Escape\'){event.preventDefault();goHome()}" />' +
+    '</div>' +
+    '<div id="searchResults"></div>';
+
+  /* restore or initialise focus */
+  var inp = document.getElementById('searchPanelInput');
+  if (inp) {
+    if (hadFocus) {
+      inp.focus();
+      inp.setSelectionRange(selStart, selEnd);
+    } else if (isFirst && !query) {
+      setTimeout(function(){ var el=document.getElementById('searchPanelInput'); if(el) el.focus(); }, 50);
+    }
+  }
+
+  /* keep top-bar search in sync when triggered from it */
+  var gs = document.getElementById('globalSearch');
+  if (gs && document.activeElement !== gs) gs.value = query || '';
+
+  _renderSearchResults(q);
+}
+
+function _panelSearchInput(value) {
+  lastSearchQuery = value;
+  /* sync top-bar input without triggering its oninput loop */
+  var gs = document.getElementById('globalSearch');
+  if (gs) gs.value = value;
+  _renderSearchResults(value.trim().toLowerCase());
+}
+
+function _renderSearchResults(q) {
+  var container = document.getElementById('searchResults');
+  if (!container) return;
 
   if (!q) {
-    html += '<div class="search-empty">Type a term, frequency, or mode in the search box above (<span class="key">/</span> to focus).</div>';
-    d.innerHTML = html;
+    container.innerHTML = '<div class="search-empty">Type a term, frequency, or mode to search.</div>';
     return;
   }
+
+  /* band / sub-band matches */
+  var bandResults = [];
+  BANDS.forEach(function(band) {
+    if (band.name.toLowerCase().includes(q) || band.full.toLowerCase().includes(q) || band.range.toLowerCase().includes(q)) {
+      bandResults.push({ band:band, sub:null });
+    }
+    band.subs.forEach(function(sub) {
+      if (sub.name.toLowerCase().includes(q) || sub.freq.toLowerCase().includes(q) ||
+          sub.usage.toLowerCase().includes(q) || (sub.desc&&sub.desc.toLowerCase().includes(q)) ||
+          sub.mod.toLowerCase().includes(q)) {
+        bandResults.push({ band:band, sub:sub });
+      }
+    });
+  });
+
+  /* glossary matches */
+  var glossResults = GLOSSARY.filter(function(item) {
+    if (!item.term) return false;
+    return item.term.toLowerCase().includes(q) || item.def.toLowerCase().includes(q);
+  });
+
+  /* WKF matches */
+  var wkfResults = [];
+  Object.keys(WKF).forEach(function(bandId) {
+    WKF[bandId].forEach(function(entry) {
+      if (entry.freq.toLowerCase().includes(q) || entry.call.toLowerCase().includes(q) ||
+          entry.desc.toLowerCase().includes(q) || entry.mode.toLowerCase().includes(q)) {
+        wkfResults.push({ bandId:bandId, entry:entry });
+      }
+    });
+  });
+
+  var total = bandResults.length + glossResults.length + wkfResults.length;
+  var html = '<div class="search-query">Results for: <strong>' + q.replace(/</g,'&lt;') + '</strong></div>';
+  if (!total) {
+    container.innerHTML = html + '<div class="search-empty">No results found for "<strong>' + q.replace(/</g,'&lt;') + '</strong>".</div>';
+    return;
+  }
+
+  html += '<div class="search-count">' + total + ' result' + (total!==1?'s':'') + '</div>';
+
+  if (glossResults.length) {
+    html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#88ccff')+'">Glossary ('+glossResults.length+')</h4>';
+    glossResults.slice(0,20).forEach(function(item) {
+      html += '<div class="search-item" onclick="openGlossary()">' +
+        '<div class="search-item-title">'+item.term+'</div>' +
+        '<div class="search-item-sub">'+item.def+'</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  if (bandResults.length) {
+    html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#88ff66')+'">Bands &amp; Sub-bands ('+bandResults.length+')</h4>';
+    bandResults.slice(0,30).forEach(function(r) {
+      if (r.sub) {
+        var esc = r.sub.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html += '<div class="search-item" onclick="navigateToBandSub(\''+r.band.id+'\',\''+esc+'\')">' +
+          '<div class="search-item-title">'+r.sub.name+'</div>' +
+          '<div class="search-item-sub">'+r.band.full+' · '+r.sub.freq+'</div>' +
+          '</div>';
+      } else {
+        html += '<div class="search-item" onclick="navigateToBandSub(\''+r.band.id+'\',null)">' +
+          '<div class="search-item-title">'+r.band.full+'</div>' +
+          '<div class="search-item-sub">'+r.band.range+'</div>' +
+          '</div>';
+      }
+    });
+    html += '</div>';
+  }
+
+  if (wkfResults.length) {
+    html += '<div class="search-section"><h4 class="search-section-title" style="color:'+tc('#ffaa44')+'">Well-Known Frequencies ('+wkfResults.length+')</h4>';
+    wkfResults.slice(0,30).forEach(function(r) {
+      html += '<div class="search-item">' +
+        '<div class="search-item-title">'+r.entry.freq+' — '+r.entry.call+' ['+r.entry.region+']</div>' +
+        '<div class="search-item-sub">'+r.entry.desc+'</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
 
   html += '<div class="search-query">Results for: <strong>' + q.replace(/</g,'&lt;') + '</strong></div>';
 
