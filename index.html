@@ -319,13 +319,30 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
   .band-panel{flex:0 0 100px;padding:5px 4px;gap:3px}
   .band-btn .label{font-size:14px}
   .band-btn .freq{font-size:8px}
-  .sub-panel.open{flex-basis:175px}
-  .sub-btn{font-size:12px;padding:4px 6px}
+  .sub-panel.open{flex-basis:210px}
+  .sub-btn{font-size:12px;padding:4px 6px;white-space:normal;overflow:visible;text-overflow:clip}
   .detail-table th{font-size:11px}
   .detail-table td{font-size:13px}
   .glossary-grid{grid-template-columns:1fr}
   .glossary-item:nth-child(odd){border-right:none}
   .search-wrap{max-width:200px}
+}
+
+/* ── responsive: landscape phone (short viewport) ───────────────────────── */
+@media(max-height:500px) and (orientation:landscape){
+  .app{overflow-y:auto}
+  .main{flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .band-panel{flex:0 0 auto;flex-direction:row;justify-content:flex-start;overflow-x:auto;padding:4px;gap:4px;border-right:none;border-bottom:1px solid #1a1f2e}
+  .band-btn{min-width:52px;padding:4px 6px}
+  .band-btn .label{font-size:13px}
+  .band-btn .freq{display:none}
+  .band-sep{width:1px;height:auto;margin:2px 0;min-height:16px}
+  .sub-panel{flex:0 0 0;border-right:none;border-bottom:1px solid #1a1f2e;transition:flex-basis .3s,opacity .25s}
+  .sub-panel.open{flex-basis:auto}
+  .sub-panel-inner{flex-direction:row;flex-wrap:wrap;overflow-y:visible;padding:4px}
+  .sub-btn{flex:0 0 auto;font-size:12px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+  .detail-panel{flex:1 1 auto;overflow-y:auto}
+  .top-bar .range{display:none}
 }
 
 /* ── responsive: mobile ─────────────────────────────────────────────────── */
@@ -566,6 +583,8 @@ html.light .calc-ans{color:#1155cc}
 .search-query{font-size:12px;color:#9aaabe;margin-bottom:6px;letter-spacing:.5px}
 .search-count{font-size:11px;color:#5a6a7a;margin-bottom:12px;letter-spacing:.5px}
 .search-section{margin-bottom:16px}
+.search-input-row{margin-bottom:12px}
+.search-input-row .bc-input{width:100%;max-width:none}
 html.light .search-empty{color:#8a94a0}
 html.light .search-query{color:#5a6878}
 html.light .search-count{color:#7a8a9a}
@@ -3690,16 +3709,60 @@ function openSearch(query) {
 
   var q = (query || '').trim().toLowerCase();
 
-  var html = '<div class="accent-bar" style="background:' + tc('#88ff66') + '"></div>' +
-    '<div class="detail-title" style="color:' + tc('#88ff66') + '">Search</div>';
+  /* preserve panel-input cursor across re-renders (theme toggle, top-bar sync) */
+  var prevInp  = document.getElementById('searchPanelInput');
+  var selStart = prevInp ? prevInp.selectionStart : q.length;
+  var selEnd   = prevInp ? prevInp.selectionEnd   : q.length;
+  var hadFocus = prevInp && (document.activeElement === prevInp);
+  var isFirst  = !prevInp;
 
-  if (!q) {
-    html += '<div class="search-empty">Type a term, frequency, or mode in the search box above (<span class="key">/</span> to focus).</div>';
-    d.innerHTML = html;
-    return;
+  var safeQ = (query || '').replace(/"/g, '&quot;');
+  d.innerHTML =
+    '<div class="accent-bar" style="background:' + tc('#88ff66') + '"></div>' +
+    '<div class="detail-title" style="color:' + tc('#88ff66') + '">Search</div>' +
+    '<div class="search-input-row">' +
+      '<input id="searchPanelInput" class="bc-input" ' +
+        'placeholder="Type a term, frequency, or mode\u2026" autocomplete="off" spellcheck="false" ' +
+        'value="' + safeQ + '" ' +
+        'oninput="_panelSearchInput(this.value)" ' +
+        'onkeydown="if(event.key===\'Escape\'){event.preventDefault();goHome()}" />' +
+    '</div>' +
+    '<div id="searchResults"></div>';
+
+  /* restore or initialise focus */
+  var inp = document.getElementById('searchPanelInput');
+  if (inp) {
+    if (hadFocus) {
+      inp.focus();
+      inp.setSelectionRange(selStart, selEnd);
+    } else if (isFirst && !query) {
+      setTimeout(function(){ var el=document.getElementById('searchPanelInput'); if(el) el.focus(); }, 50);
+    }
   }
 
-  html += '<div class="search-query">Results for: <strong>' + q.replace(/</g,'&lt;') + '</strong></div>';
+  /* keep top-bar search in sync when triggered from it */
+  var gs = document.getElementById('globalSearch');
+  if (gs && document.activeElement !== gs) gs.value = query || '';
+
+  _renderSearchResults(q);
+}
+
+function _panelSearchInput(value) {
+  lastSearchQuery = value;
+  /* sync top-bar input without triggering its oninput loop */
+  var gs = document.getElementById('globalSearch');
+  if (gs) gs.value = value;
+  _renderSearchResults(value.trim().toLowerCase());
+}
+
+function _renderSearchResults(q) {
+  var container = document.getElementById('searchResults');
+  if (!container) return;
+
+  if (!q) {
+    container.innerHTML = '<div class="search-empty">Type a term, frequency, or mode to search.</div>';
+    return;
+  }
 
   /* band / sub-band matches */
   var bandResults = [];
@@ -3734,9 +3797,9 @@ function openSearch(query) {
   });
 
   var total = bandResults.length + glossResults.length + wkfResults.length;
+  var html = '<div class="search-query">Results for: <strong>' + q.replace(/</g,'&lt;') + '</strong></div>';
   if (!total) {
-    html += '<div class="search-empty">No results found for "<strong>' + q.replace(/</g,'&lt;') + '</strong>".</div>';
-    d.innerHTML = html;
+    container.innerHTML = html + '<div class="search-empty">No results found for "<strong>' + q.replace(/</g,'&lt;') + '</strong>".</div>';
     return;
   }
 
@@ -3783,7 +3846,7 @@ function openSearch(query) {
     html += '</div>';
   }
 
-  d.innerHTML = html;
+  container.innerHTML = html;
 }
 
 function navigateToBandSub(bandId, subName) {
