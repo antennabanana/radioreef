@@ -564,6 +564,29 @@ html.light .bc-table th{color:#cc5500;border-bottom-color:#d0d5e0}
 html.light .bc-table td{color:#2a3040;border-bottom-color:#e0e4ec}
 html.light .bc-freq{color:#2a3040}
 html.light .bc-meta{color:#7a8a9a}
+.bc-help{border:1px solid #1e2840;border-radius:3px;margin-bottom:12px;overflow:hidden}
+.bc-help summary{padding:7px 10px;font-size:11px;letter-spacing:.5px;color:#9aaabe;cursor:pointer;list-style:none;user-select:none;background:linear-gradient(180deg,#0f1320,#0b0e1a);text-transform:uppercase;outline:none}
+.bc-help summary::-webkit-details-marker{display:none}
+.bc-help summary::before{content:'▶  ';font-size:9px;opacity:.6;transition:transform .15s}
+details.bc-help[open] summary::before{content:'▼  '}
+.bc-help summary:hover{color:#c8d8e8}
+.bc-help-body{padding:10px 12px;font-size:12px;color:#8a9ab0;line-height:1.6;background:#080b14;border-top:1px solid #1e2840}
+.bc-help-body p{margin:0 0 8px}
+.bc-help-body strong{color:#c8ccd0}
+.bc-help-body code{color:#ff8844;background:#111828;padding:1px 4px;border-radius:2px;font-family:'JetBrains Mono',monospace}
+.bc-syntax{width:100%;border-collapse:collapse;margin-top:4px}
+.bc-syntax td{padding:3px 8px;font-size:12px;vertical-align:top;border-bottom:1px solid #12151e}
+.bc-syntax tr:last-child td{border-bottom:none}
+.bc-syntax td:first-child{color:#ff8844;white-space:nowrap;font-family:'JetBrains Mono',monospace;width:1%;padding-right:16px}
+.bc-syntax td:last-child{color:#8a9ab0}
+html.light .bc-help{border-color:#c8d0dc}
+html.light .bc-help summary{background:linear-gradient(180deg,#e8eaf0,#dfe2ea);color:#5a6878}
+html.light .bc-help summary:hover{color:#2a3040}
+html.light .bc-help-body{background:#f4f6fa;border-top-color:#c8d0dc;color:#4a5868}
+html.light .bc-help-body strong{color:#2a3040}
+html.light .bc-help-body code{color:#cc5500;background:#e8eaf0}
+html.light .bc-syntax td{border-bottom-color:#dde0e8}
+html.light .bc-syntax td:first-child{color:#cc5500}
 
 /* ── CALC panel ── */
 .calc-panel{display:block}
@@ -3250,6 +3273,24 @@ function openBroadcast() {
     '<div class="accent-bar" style="background:' + tc('#ff8844') + '"></div>' +
     '<div class="detail-title" style="color:' + tc('#ff8844') + '">Shortwave Broadcast Finder</div>' +
     '<div class="detail-subtitle">Find EiBi A26 shortwave broadcasts targetted at a location</div>' +
+    '<details class="bc-help">' +
+      '<summary class="bc-help-toggle">How to use this finder</summary>' +
+      '<div class="bc-help-body">' +
+        '<p><strong>City / location</strong> — type a city name (full or prefix). Leave blank to search all target regions.</p>' +
+        '<p><strong>Frequency</strong> — supports four modes:</p>' +
+        '<table class="bc-syntax">' +
+          '<tr><td>7</td><td>Prefix match — all entries whose kHz value starts with "7" (7000–7999 kHz = 40 m band)</td></tr>' +
+          '<tr><td>9410</td><td>Prefix match on kHz — matches 9410 kHz exactly</td></tr>' +
+          '<tr><td>14.074</td><td>Decimal without unit — treated as MHz if &lt;30, otherwise kHz</td></tr>' +
+          '<tr><td>9.41 MHz</td><td>Explicit unit (kHz / MHz / GHz) — exact match ±1 kHz</td></tr>' +
+          '<tr><td>&gt;7&lt;=8</td><td>Range without unit — matches 7–8 kHz <em>or</em> 7–8 MHz <em>or</em> 7–8 GHz (all scales tried)</td></tr>' +
+          '<tr><td>&gt;=7MHz&lt;8MHz</td><td>Range with units — matches exactly 7–8 MHz only</td></tr>' +
+          '<tr><td>&gt;3000kHz</td><td>Single-sided range — all entries above 3 MHz</td></tr>' +
+          '<tr><td>&lt;=10</td><td>Single-sided range without unit — below 10 kHz, 10 MHz, or 10 GHz</td></tr>' +
+        '</table>' +
+        '<p style="margin-top:8px"><strong>Results</strong> — sorted by frequency. Without a frequency filter, results are capped at 200 rows; add a range to see the full matching set.</p>' +
+      '</div>' +
+    '</details>' +
     '<div class="bc-controls">' +
       '<div class="bc-row">' +
         '<label class="bc-label">City / location</label>' +
@@ -3258,7 +3299,7 @@ function openBroadcast() {
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">Frequency (optional)</label>' +
-        '<input id="bcFreq" class="bc-input" placeholder="e.g. 7, 9410, 14.074 MHz — prefix or exact" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
+        '<input id="bcFreq" class="bc-input" placeholder="e.g. 9410 · 14.074 · >7<=8 · >=9MHz<10MHz" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
       '</div>' +
       '<div class="bc-row">' +
         '<label class="bc-label">&nbsp;</label>' +
@@ -3286,27 +3327,8 @@ function runBroadcast() {
     }
   }
 
-  /* ── parse freq filter: prefix match or exact (when unit given) ── */
-  var freqFilter = null;
-  if (freqInput) {
-    if (/[GMk]Hz/i.test(freqInput)) {
-      /* explicit unit → exact ±1 kHz */
-      var khzExact = _parseFreqToKhz(freqInput);
-      if (khzExact !== null) freqFilter = { exact: khzExact };
-    } else {
-      var stripped = freqInput.replace(/[^\d.]/g, '');
-      if (stripped) {
-        if (stripped.indexOf('.') >= 0) {
-          /* decimal without unit: treat as MHz if < 30, else kHz */
-          var n = parseFloat(stripped);
-          if (!isNaN(n)) freqFilter = { prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
-        } else {
-          /* plain digits → prefix of kHz string */
-          freqFilter = { prefix: stripped };
-        }
-      }
-    }
-  }
+  /* ── parse freq filter ── */
+  var freqFilter = _parseBcFreq(freqInput);
 
   /* ── filter EIBI ── */
   var targets = city ? city.targets : null;
@@ -3314,28 +3336,41 @@ function runBroadcast() {
     /* e = [freq_khz, start_hhmm, end_hhmm, days, itu, station, lang, target] */
     if (targets && !targets.some(function(t){ return e[7] === t; })) return false;
     if (freqFilter !== null) {
-      if (freqFilter.exact !== undefined) {
-        if (Math.abs(e[0] - freqFilter.exact) > 1) return false;
-      } else {
+      if (freqFilter.type === 'exact') {
+        if (Math.abs(e[0] - freqFilter.khz) > 1) return false;
+      } else if (freqFilter.type === 'prefix') {
         if (!String(Math.round(e[0])).startsWith(freqFilter.prefix)) return false;
+      } else if (freqFilter.type === 'range') {
+        if (freqFilter.anyUnit) {
+          /* All bounds carry explicit units — compare directly in kHz */
+          if (!_boundsMatch(e[0], freqFilter.bounds, 1)) return false;
+        } else {
+          /* Unitless bounds: match in kHz, MHz, or GHz scale (union) */
+          if (!_boundsMatch(e[0], freqFilter.bounds, 1) &&
+              !_boundsMatch(e[0], freqFilter.bounds, 1000) &&
+              !_boundsMatch(e[0], freqFilter.bounds, 1e6)) return false;
+        }
       }
     }
     return true;
   });
 
   filtered.sort(function(a,b){ return a[0]-b[0]; });
-  var limited = filtered.slice(0, 200);
-  var more    = filtered.length > 200;
+
+  /* No cap when a freq filter is active — the range/prefix naturally limits results.
+     Without any freq filter, cap at 200 to avoid rendering thousands of rows. */
+  var capped  = freqFilter === null && filtered.length > 200;
+  var limited = capped ? filtered.slice(0, 200) : filtered;
 
   if (!limited.length) {
     results.innerHTML = '<div class="bc-empty">No broadcasts found' +
       (city ? ' for <strong>' + city.name + '</strong>' : '') +
-      (freqFilter ? ' matching <strong>' + freqInput + '</strong>' : '') +
+      (freqInput ? ' matching <strong>' + freqInput + '</strong>' : '') +
       '.</div>';
     return;
   }
 
-  var html = '<div class="bc-meta">Showing ' + limited.length + (more ? ' of ' + filtered.length : '') +
+  var html = '<div class="bc-meta">Showing ' + limited.length + (capped ? ' of ' + filtered.length : '') +
     ' broadcasts' + (city ? ' for <strong>' + city.name + '</strong>' : '') + '</div>';
   html += '<table class="bc-table"><tr><th>Freq</th><th>Station</th><th>Lang</th><th>Time (UTC)</th><th>Days</th><th>ITU</th></tr>';
   limited.forEach(function(e) {
@@ -3344,7 +3379,7 @@ function runBroadcast() {
       '</td><td>' + formatDays(e[3]) + '</td><td>' + e[4] + '</td></tr>';
   });
   html += '</table>';
-  if (more) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — narrow by city or frequency</div>';
+  if (capped) html += '<div class="bc-meta" style="margin-top:8px">+ ' + (filtered.length - 200) + ' more — use a frequency range to narrow results</div>';
   results.innerHTML = html;
 }
 
@@ -3354,6 +3389,69 @@ function fmtFreqKhz(khz) {
     return s.replace(/\.?0+$/, '') + ' MHz';
   }
   return Math.round(khz) + ' kHz';
+}
+
+/* ── BC frequency filter parser ──────────────────────────────
+   Returns null | {type:'exact', khz} | {type:'prefix', prefix}
+                | {type:'range', bounds:[{op,val,khz?,hasUnit}], anyUnit}
+   Range syntax: >N, >=N, <N, <=N — combinable e.g. ">7<=8"
+   Units: kHz / MHz / GHz on each bound (optional).
+   Unitless → matched against kHz, MHz and GHz scales (union).
+   ─────────────────────────────────────────────────────────── */
+function _parseBcFreq(s) {
+  s = s.trim();
+  if (!s) return null;
+
+  if (/[><]/.test(s)) {
+    var re = /([><]=?)\s*([\d.]+)\s*([GMk]Hz)?/gi;
+    var bounds = [], m, anyUnit = false;
+    while ((m = re.exec(s)) !== null) {
+      var op = m[1], raw = parseFloat(m[2]);
+      if (isNaN(raw)) continue;
+      var unitStr = (m[3] || '').toLowerCase();
+      var hasUnit = !!m[3];
+      if (hasUnit) {
+        anyUnit = true;
+        var khz = unitStr.indexOf('g') === 0 ? raw * 1e6
+                : unitStr.indexOf('m') === 0 ? raw * 1000
+                : raw; /* kHz */
+        bounds.push({ op: op, khz: khz, hasUnit: true });
+      } else {
+        bounds.push({ op: op, val: raw, hasUnit: false });
+      }
+    }
+    if (bounds.length) return { type: 'range', bounds: bounds, anyUnit: anyUnit };
+  }
+
+  if (/[GMk]Hz/i.test(s)) {
+    var k = _parseFreqToKhz(s);
+    if (k !== null) return { type: 'exact', khz: k };
+  }
+
+  var stripped = s.replace(/[^\d.]/g, '');
+  if (!stripped) return null;
+  if (stripped.indexOf('.') >= 0) {
+    var n = parseFloat(stripped);
+    if (!isNaN(n)) return { type: 'prefix', prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
+  }
+  return { type: 'prefix', prefix: stripped };
+}
+
+/* Test entry freq (kHz) against a bounds array at a given unit scale.
+   scale = 1 (kHz), 1000 (MHz), 1e6 (GHz).
+   For hasUnit bounds, khz field is used directly (scale ignored).
+   For unitless bounds, val * scale is used. */
+function _boundsMatch(fKhz, bounds, scale) {
+  return bounds.every(function(b) {
+    var ref = b.hasUnit ? b.khz : b.val * scale;
+    switch (b.op) {
+      case '>':  return fKhz >  ref;
+      case '>=': return fKhz >= ref;
+      case '<':  return fKhz <  ref;
+      case '<=': return fKhz <= ref;
+      default:   return true;
+    }
+  });
 }
 
 function fmtTimeNum(t) {
