@@ -180,6 +180,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ant-body{display:grid;grid-template-columns:180px 1fr 180px;gap:12px;padding:12px;align-items:start}
 .ant-svg-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ant-svg-label{font-size:10px;color:#5a7080;letter-spacing:.5px;text-align:center}
+.ant-svg-note{font-size:9px;color:#3a5060;line-height:1.4;text-align:center;padding:0 4px}
 .ant-desc{font-size:14px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
 .ant-props{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:10px}
 .ant-pro,.ant-con{font-size:13px;line-height:1.5;padding-left:14px;position:relative}
@@ -3705,7 +3706,8 @@ function openAntennas() {
       cons: ['Narrow bandwidth (typically 2–5%)','Mechanically complex to build precisely','Wind loading on long boom','Fixed to one band without retuning'],
       best: 'Best for: VHF/UHF DX, satellite work, weak-signal EME, contesting where directional gain is critical.',
       nullNote: 'Sharp rear and side nulls — rotate carefully to avoid missing signals off the back.',
-      photoType: 'yagi'
+      photoType: 'yagi',
+      photoNote: 'REF = Reflector · DE = Driven Element · DIR = Director'
     },
     {
       name: 'Magnetic Loop',
@@ -3731,7 +3733,8 @@ function openAntennas() {
       cons: ['Requires 49:1 or 64:1 unun transformer','Common-mode current on feedline without choke','Pattern distorted if wire runs near ground','Transformer becomes lossy if core saturates at QRO'],
       best: 'Best for: SOTA/POTA portable ops, camping, emergency comms where fast multi-band deployment matters.',
       nullNote: 'Pattern nearly identical to dipole — deep nulls off both wire tips.',
-      photoType: 'efhw'
+      photoType: 'efhw',
+      photoNote: '49:1 = impedance transformer ratio (unun)'
     },
     {
       name: 'Log-Periodic Dipole Array (LPDA)',
@@ -3787,13 +3790,13 @@ function openAntennas() {
             '</div>' +
             '<div class="ant-null-note">&#9685; ' + a.nullNote + '</div>' +
           '</div>' +
+          '<div class="ant-svg-wrap">' +
+            antPhotoSVG(a.photoType, tc(a.accent)) +
+            '<span class="ant-svg-label">Physical appearance</span>' +
+            (a.photoNote ? '<span class="ant-svg-note">' + a.photoNote + '</span>' : '') +
+          '</div>' +
         '</div>' +
-        '<div class="ant-svg-wrap">' +
-          antPhotoSVG(a.photoType, tc(a.accent)) +
-          '<span class="ant-svg-label">Physical appearance</span>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+      '</div>';
   });
 
   d.innerHTML = html;
