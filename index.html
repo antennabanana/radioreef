@@ -177,7 +177,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ant-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(180deg,#141828,#111420);border-bottom:1px solid #1e2840}
 .ant-name{font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e0e8f0}
 .ant-badge{font-size:10px;letter-spacing:.5px;padding:2px 6px;border-radius:2px;background:#ff66cc22;color:#ff66cc;border:1px solid #ff66cc44;margin-left:auto}
-.ant-body{display:grid;grid-template-columns:180px 1fr;gap:12px;padding:12px;align-items:start}
+.ant-body{display:grid;grid-template-columns:180px 1fr 180px;gap:12px;padding:12px;align-items:start}
 .ant-svg-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ant-svg-label{font-size:10px;color:#5a7080;letter-spacing:.5px;text-align:center}
 .ant-desc{font-size:14px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
@@ -187,7 +187,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ant-con{color:#ff6644}.ant-con::before{content:'▼';position:absolute;left:0;font-size:9px}
 .ant-best{font-size:13px;color:#44ccff;background:#44ccff11;border:1px solid #44ccff33;border-radius:2px;padding:4px 8px;margin-bottom:8px}
 .ant-null-note{font-size:13px;color:#ffaa44;background:#ffaa4411;border:1px solid #ffaa4433;border-radius:2px;padding:4px 8px}
-@media(max-width:540px){.ant-body{grid-template-columns:1fr}}
+/* 3-col → 2-col at medium width: SVGs side-by-side in row 1, text spans full width in row 2 */
+@media(max-width:780px){
+  .ant-body{grid-template-columns:180px 180px}
+  .ant-body>:nth-child(1){grid-column:1;grid-row:1}
+  .ant-body>:nth-child(2){grid-column:1/3;grid-row:2}
+  .ant-body>:nth-child(3){grid-column:2;grid-row:1}
+}
+@media(max-width:540px){.ant-body{grid-template-columns:1fr}
+  .ant-body>:nth-child(1),.ant-body>:nth-child(2),.ant-body>:nth-child(3){grid-column:1;grid-row:auto}
+}
 
 /* ── propagation panel ──────────────────────────────────────────────────── */
 .prop-section{margin-bottom:14px}
@@ -3584,6 +3593,79 @@ function openAntennas() {
     return svg;
   }
 
+  function antPhotoSVG(type, c) {
+    var S = 180;
+    var svg = '<svg viewBox="0 0 '+S+' '+S+'" xmlns="http://www.w3.org/2000/svg" style="display:block;width:'+S+'px;height:'+S+'px">';
+    svg += '<circle cx="90" cy="90" r="72" fill="none" stroke="#1e2840" stroke-width="1"/>';
+    switch (type) {
+      case 'dipole':
+        svg += '<line x1="18" y1="90" x2="83" y2="90" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<line x1="97" y1="90" x2="162" y2="90" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<rect x="83" y="82" width="14" height="16" rx="2" fill="#0a0f1e" stroke="'+c+'" stroke-width="1.5"/>';
+        svg += '<line x1="90" y1="98" x2="90" y2="145" stroke="'+c+'" stroke-width="1.5" stroke-dasharray="3,3"/>';
+        svg += '<text x="90" y="62" text-anchor="middle" fill="'+c+'" font-size="9" font-family="JetBrains Mono,monospace">\u2190 \u03bb/2 \u2192</text>';
+        break;
+      case 'vertical':
+        svg += '<line x1="90" y1="25" x2="90" y2="108" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<line x1="90" y1="108" x2="28" y2="140" stroke="'+c+'" stroke-width="1.5" stroke-linecap="round"/>';
+        svg += '<line x1="90" y1="108" x2="58" y2="152" stroke="'+c+'" stroke-width="1.5" stroke-linecap="round"/>';
+        svg += '<line x1="90" y1="108" x2="122" y2="152" stroke="'+c+'" stroke-width="1.5" stroke-linecap="round"/>';
+        svg += '<line x1="90" y1="108" x2="152" y2="140" stroke="'+c+'" stroke-width="1.5" stroke-linecap="round"/>';
+        svg += '<circle cx="90" cy="108" r="4" fill="'+c+'"/>';
+        svg += '<text x="98" y="65" text-anchor="start" fill="'+c+'" font-size="9" font-family="JetBrains Mono,monospace">\u03bb/4</text>';
+        break;
+      case 'yagi':
+        svg += '<line x1="20" y1="90" x2="162" y2="90" stroke="#3a4a60" stroke-width="2"/>';
+        svg += '<line x1="30" y1="52" x2="30" y2="128" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"/>';
+        svg += '<line x1="68" y1="60" x2="68" y2="80" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"/>';
+        svg += '<line x1="68" y1="100" x2="68" y2="120" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"/>';
+        svg += '<rect x="62" y="80" width="12" height="20" rx="2" fill="#0a0f1e" stroke="'+c+'" stroke-width="1.5"/>';
+        svg += '<line x1="100" y1="62" x2="100" y2="118" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/>';
+        svg += '<line x1="128" y1="66" x2="128" y2="114" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/>';
+        svg += '<line x1="152" y1="70" x2="152" y2="110" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/>';
+        svg += '<text x="30" y="44" text-anchor="middle" fill="#3a4a60" font-size="8" font-family="JetBrains Mono,monospace">REF</text>';
+        svg += '<text x="68" y="44" text-anchor="middle" fill="'+c+'" font-size="8" font-family="JetBrains Mono,monospace">DE</text>';
+        svg += '<text x="130" y="44" text-anchor="middle" fill="#3a4a60" font-size="8" font-family="JetBrains Mono,monospace">DIR \u2192</text>';
+        break;
+      case 'loop':
+        svg += '<path d="M 103 40 A 50 50 0 1 1 77 40" fill="none" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<line x1="77" y1="40" x2="77" y2="28" stroke="'+c+'" stroke-width="1.5"/>';
+        svg += '<line x1="103" y1="40" x2="103" y2="28" stroke="'+c+'" stroke-width="1.5"/>';
+        svg += '<line x1="70" y1="28" x2="84" y2="28" stroke="'+c+'" stroke-width="2.5"/>';
+        svg += '<line x1="96" y1="28" x2="110" y2="28" stroke="'+c+'" stroke-width="2.5"/>';
+        svg += '<line x1="90" y1="140" x2="90" y2="157" stroke="'+c+'" stroke-width="1.5" stroke-dasharray="3,3"/>';
+        svg += '<text x="90" y="170" text-anchor="middle" fill="'+c+'" font-size="8" font-family="JetBrains Mono,monospace">tuning cap</text>';
+        break;
+      case 'efhw':
+        svg += '<rect x="18" y="80" width="22" height="20" rx="3" fill="#0a0f1e" stroke="'+c+'" stroke-width="1.5"/>';
+        svg += '<text x="29" y="93" text-anchor="middle" fill="'+c+'" font-size="7" font-family="JetBrains Mono,monospace">49:1</text>';
+        svg += '<line x1="40" y1="90" x2="162" y2="90" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<line x1="29" y1="100" x2="29" y2="148" stroke="'+c+'" stroke-width="1.5" stroke-dasharray="3,3"/>';
+        svg += '<text x="101" y="75" text-anchor="middle" fill="'+c+'" font-size="8" font-family="JetBrains Mono,monospace">\u2190 \u03bb/2 wire \u2192</text>';
+        break;
+      case 'lpda':
+        svg += '<line x1="20" y1="90" x2="158" y2="90" stroke="#3a4a60" stroke-width="2"/>';
+        var elems = [{x:28,h:58},{x:52,h:50},{x:74,h:42},{x:93,h:35},{x:110,h:29},{x:125,h:24},{x:138,h:20}];
+        for (var i=0;i<elems.length;i++) {
+          svg += '<line x1="'+elems[i].x+'" y1="'+(90-elems[i].h)+'" x2="'+elems[i].x+'" y2="'+(90+elems[i].h)+'" stroke="'+c+'" stroke-width="'+(i===0?2.5:1.8)+'" stroke-linecap="round"/>';
+        }
+        svg += '<text x="152" y="80" text-anchor="middle" fill="'+c+'" font-size="10" font-family="JetBrains Mono,monospace">\u2192</text>';
+        break;
+      case 'dish':
+        svg += '<path d="M 148 22 C 10 22 10 158 148 158" fill="none" stroke="'+c+'" stroke-width="3" stroke-linecap="round"/>';
+        svg += '<line x1="148" y1="22" x2="148" y2="158" stroke="'+c+'" stroke-width="1.5" stroke-dasharray="4,3"/>';
+        svg += '<line x1="148" y1="90" x2="103" y2="90" stroke="#3a4a60" stroke-width="1.5"/>';
+        svg += '<circle cx="103" cy="90" r="6" fill="#0a0f1e" stroke="'+c+'" stroke-width="2"/>';
+        svg += '<line x1="97" y1="90" x2="60" y2="90" stroke="'+c+'" stroke-width="1" stroke-dasharray="3,2"/>';
+        svg += '<text x="90" y="170" text-anchor="middle" fill="'+c+'" font-size="8" font-family="JetBrains Mono,monospace">parabolic</text>';
+        break;
+      default:
+        svg += '<text x="90" y="95" text-anchor="middle" fill="'+c+'" font-size="10" font-family="JetBrains Mono,monospace">'+type+'</text>';
+    }
+    svg += '</svg>';
+    return svg;
+  }
+
   /* ── antenna definitions ──────────────────────────────────────── */
   var ants = [
     {
@@ -3596,7 +3678,8 @@ function openAntennas() {
       pros: ['Simple & cheap to build','Near-50/75 Ω feed impedance','Predictable figure-8 pattern','Excellent for portable ops'],
       cons: ['Omnidirectional in elevation — no gain toward horizon','Length fixed to one band','Needs support at both ends','RF can appear on feedline (choking required)'],
       best: 'Best for: single-band portable, emergency, or base-station use when directivity is not required.',
-      nullNote: 'Deep nulls off both tips. Orient perpendicular to desired station for peak signal.'
+      nullNote: 'Deep nulls off both tips. Orient perpendicular to desired station for peak signal.',
+      photoType: 'dipole'
     },
     {
       name: 'Vertical / Ground Plane',
@@ -3608,7 +3691,8 @@ function openAntennas() {
       pros: ['True omnidirectional azimuth','Low-angle radiation for DX','Compact vertical footprint','No matching needed at 50 Ω with angled radials'],
       cons: ['Low-efficiency without adequate ground system','Local noise pickup from all directions','No azimuth directivity or gain','Nearby objects detune resonance'],
       best: 'Best for: DX chasing on HF, mobile HF/VHF, marine/aviation where omnidirectional coverage is mandatory.',
-      nullNote: 'Straight overhead (zenith) null — NVIS contacts not possible without modification.'
+      nullNote: 'Straight overhead (zenith) null — NVIS contacts not possible without modification.',
+      photoType: 'vertical'
     },
     {
       name: 'Yagi-Uda',
@@ -3620,7 +3704,8 @@ function openAntennas() {
       pros: ['High gain per size on VHF/UHF','Excellent front-to-back ratio','Good noise rejection from rear','Scalable: add directors for more gain'],
       cons: ['Narrow bandwidth (typically 2–5%)','Mechanically complex to build precisely','Wind loading on long boom','Fixed to one band without retuning'],
       best: 'Best for: VHF/UHF DX, satellite work, weak-signal EME, contesting where directional gain is critical.',
-      nullNote: 'Sharp rear and side nulls — rotate carefully to avoid missing signals off the back.'
+      nullNote: 'Sharp rear and side nulls — rotate carefully to avoid missing signals off the back.',
+      photoType: 'yagi'
     },
     {
       name: 'Magnetic Loop',
@@ -3632,7 +3717,8 @@ function openAntennas() {
       pros: ['Very compact for HF use','Deep null for noise/QRM rejection','Low-profile / stealth installation','Good efficiency if high-Q cap is used'],
       cons: ['Narrow bandwidth — frequent retuning','High voltage on tuning capacitor at power','Very sensitive to nearby conductive objects','Lower efficiency than full-size antenna'],
       best: 'Best for: apartment or HOA-restricted installations, portable HF where space is severely limited.',
-      nullNote: 'Perpendicular-to-plane nulls are 30+ dB deep — very effective for rejecting local noise sources.'
+      nullNote: 'Perpendicular-to-plane nulls are 30+ dB deep — very effective for rejecting local noise sources.',
+      photoType: 'loop'
     },
     {
       name: 'End-Fed Half-Wave (EFHW)',
@@ -3644,7 +3730,8 @@ function openAntennas() {
       pros: ['Single wire covers multiple harmonic bands','Only one support point required','Simple portable deployment','Near-dipole efficiency when well-matched'],
       cons: ['Requires 49:1 or 64:1 unun transformer','Common-mode current on feedline without choke','Pattern distorted if wire runs near ground','Transformer becomes lossy if core saturates at QRO'],
       best: 'Best for: SOTA/POTA portable ops, camping, emergency comms where fast multi-band deployment matters.',
-      nullNote: 'Pattern nearly identical to dipole — deep nulls off both wire tips.'
+      nullNote: 'Pattern nearly identical to dipole — deep nulls off both wire tips.',
+      photoType: 'efhw'
     },
     {
       name: 'Log-Periodic Dipole Array (LPDA)',
@@ -3656,7 +3743,8 @@ function openAntennas() {
       pros: ['Very wide instantaneous bandwidth','Stable gain and pattern across range','Good front-to-back ratio','No retuning needed across coverage'],
       cons: ['Lower gain than same-size Yagi at one frequency','Mechanically complex (transposed feed)','Larger boom length for given gain','Heavier and more expensive than Yagi'],
       best: 'Best for: HF monitoring/listening, wide-band SDR front-ends, shortwave broadcasting, all-band HF stations.',
-      nullNote: 'Rear and side rejection useful but not as deep as Yagi — rotate for best null.'
+      nullNote: 'Rear and side rejection useful but not as deep as Yagi — rotate for best null.',
+      photoType: 'lpda'
     },
     {
       name: 'Parabolic Dish',
@@ -3668,7 +3756,8 @@ function openAntennas() {
       pros: ['Exceptional gain at microwave frequencies','Extremely narrow beamwidth for long-range links','Relatively low sidelobe level','Passive — no active elements to fail'],
       cons: ['Mechanical pointing required — no azimuth coverage','Gain collapses if surface tolerance exceeds λ/16','Very narrow bandwidth relative to absolute frequency','Large wind-loading surface area'],
       best: 'Best for: satellite ground stations, 10 GHz+ microwave links, EME, radio astronomy.',
-      nullNote: 'Deep sidelobe nulls at 15–25° off boresight — mispointing by even 1° causes significant loss at 10 GHz.'
+      nullNote: 'Deep sidelobe nulls at 15–25° off boresight — mispointing by even 1° causes significant loss at 10 GHz.',
+      photoType: 'dish'
     }
   ];
 
@@ -3699,7 +3788,12 @@ function openAntennas() {
             '<div class="ant-null-note">&#9685; ' + a.nullNote + '</div>' +
           '</div>' +
         '</div>' +
-      '</div>';
+        '<div class="ant-svg-wrap">' +
+          antPhotoSVG(a.photoType, tc(a.accent)) +
+          '<span class="ant-svg-label">Physical appearance</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
   });
 
   d.innerHTML = html;
