@@ -196,6 +196,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .time-city-time{font-size:30px;font-weight:700;letter-spacing:2px;color:#e0e8f0;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:3px}
 .time-city-date{font-size:11px;color:#5a7080;letter-spacing:.3px;margin-bottom:8px}
 .time-city-offset{font-size:12px;color:#44ccff;background:#44ccff0f;border:1px solid #44ccff2a;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block}
+.time-city-tzname{font-size:10px;color:#3a6070;letter-spacing:.3px;margin-bottom:6px;opacity:.85}
 .time-city-dst{font-size:12px;margin-bottom:4px;line-height:1.4}
 .time-dst-on{color:#33ff88}.time-dst-off{color:#9aaabe}.time-dst-none{color:#3a5060}
 .time-city-dst-row{font-size:11px;color:#3a5060;margin-bottom:4px;line-height:1.5}
@@ -205,6 +206,7 @@ html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar,ht
 html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
 html.light .time-utc-clock{color:#009987}
 html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
+html.light .time-city-tzname{color:#8a9aae}
 html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
 html.light .time-section-label{border-color:#c8cdd8}
 html.light .time-diff-info strong{color:#1e2840}
@@ -3860,91 +3862,295 @@ function openAntennas() {
    TIME PANEL — World clock & city comparison
    ══════════════════════════════════════════════════════════════ */
  var TIME_CITIES = [
-   /* UTC-12 → UTC-1 */
-   {display:'(UTC-12:00) International Date Line West', tz:'Etc/GMT+12',                       short:'Dateline',      search:['dateline','international date line','GMT-12']},
-   {display:'(UTC-11:00) Coordinated Universal Time-11',tz:'Pacific/Pago_Pago',                short:'UTC-11',        search:['UTC-11','Pago Pago','Samoa','American Samoa']},
-   {display:'(UTC-10:00) Hawaii',                        tz:'Pacific/Honolulu',                 short:'Hawaii',        search:['Hawaii','Honolulu','HST']},
-   {display:'(UTC-09:00) Alaska',                        tz:'America/Anchorage',                short:'Alaska',        search:['Alaska','Anchorage','AKST']},
-   {display:'(UTC-08:00) Pacific Time (US & Canada)',    tz:'America/Los_Angeles',              short:'Pacific Time',  search:['Pacific','Los Angeles','Vancouver','Seattle','Portland']},
-   {display:'(UTC-07:00) Mountain Time (US & Canada)',   tz:'America/Denver',                   short:'Mountain Time', search:['Mountain','Denver','Salt Lake City','MST']},
-   {display:'(UTC-07:00) Arizona',                       tz:'America/Phoenix',                  short:'Arizona',       search:['Arizona','Phoenix','Mountain Standard']},
-   {display:'(UTC-06:00) Central Time (US & Canada)',    tz:'America/Chicago',                  short:'Central Time',  search:['Central','Chicago','Dallas','Houston','Winnipeg','CST']},
-   {display:'(UTC-06:00) Mexico City',                   tz:'America/Mexico_City',              short:'Mexico City',   search:['Mexico City','Guadalajara','Monterrey']},
-   {display:'(UTC-05:00) Eastern Time (US & Canada)',    tz:'America/New_York',                 short:'Eastern Time',  search:['Eastern','New York','Toronto','Boston','Miami','Atlanta','EST']},
-   {display:'(UTC-05:00) Havana',                        tz:'America/Havana',                   short:'Havana',        search:['Havana','Cuba','CST']},
-   {display:'(UTC-05:00) Bogota, Lima, Quito',           tz:'America/Bogota',                   short:'Bogota',        search:['Bogota','Lima','Quito','Colombia','Peru','Ecuador']},
-   {display:'(UTC-04:30) Caracas',                       tz:'America/Caracas',                  short:'Caracas',       search:['Caracas','Venezuela','VET']},
-   {display:'(UTC-04:00) Atlantic Time (Canada)',         tz:'America/Halifax',                  short:'Halifax',       search:['Atlantic','Halifax','Nova Scotia','AST']},
-   {display:'(UTC-04:00) Santiago',                      tz:'America/Santiago',                 short:'Santiago',      search:['Santiago','Chile']},
-   {display:'(UTC-03:30) Newfoundland',                  tz:'America/St_Johns',                 short:'Newfoundland',  search:['Newfoundland','St. Johns','St Johns','NST']},
-   {display:'(UTC-03:00) Brasilia',                      tz:'America/Sao_Paulo',                short:'Brasilia',      search:['Brasilia','Sao Paulo','São Paulo','Brazil','BRT']},
-   {display:'(UTC-03:00) Buenos Aires',                  tz:'America/Argentina/Buenos_Aires',   short:'Buenos Aires',  search:['Buenos Aires','Argentina','ART']},
-   {display:'(UTC-01:00) Azores',                        tz:'Atlantic/Azores',                  short:'Azores',        search:['Azores','AZOT']},
-   /* UTC+0 */
-   {display:'(UTC+00:00) UTC',                           tz:'UTC',                              short:'UTC',           search:['UTC','Universal','Coordinated Universal Time']},
-   {display:'(UTC+00:00) Reykjavik',                     tz:'Atlantic/Reykjavik',               short:'Reykjavik',     search:['Reykjavik','Iceland','GMT']},
-   {display:'(UTC+00:00) Dublin, Edinburgh, Lisbon, London', tz:'Europe/London',                short:'London',        search:['London','Dublin','Edinburgh','Lisbon','UK','Ireland','England','Wales','GMT','WET','BST']},
-   {display:'(UTC+00:00) Casablanca',                    tz:'Africa/Casablanca',                short:'Casablanca',    search:['Casablanca','Morocco','Rabat']},
-   /* UTC+1 */
-   {display:'(UTC+01:00) Amsterdam, Berlin, Rome, Stockholm, Vienna', tz:'Europe/Berlin',       short:'Berlin',        search:['Berlin','Amsterdam','Rome','Stockholm','Vienna','Frankfurt','Milan','CET']},
-   {display:'(UTC+01:00) Brussels, Copenhagen, Madrid, Paris', tz:'Europe/Paris',               short:'Paris',         search:['Paris','Brussels','Copenhagen','Madrid','Monaco','CET']},
-   {display:'(UTC+01:00) Warsaw',                        tz:'Europe/Warsaw',                    short:'Warsaw',        search:['Warsaw','Poland','CET']},
-   {display:'(UTC+01:00) West Central Africa',           tz:'Africa/Lagos',                     short:'Lagos',         search:['Lagos','Nigeria','West Africa','WAT']},
-   /* UTC+2 */
-   {display:'(UTC+02:00) Athens, Bucharest',             tz:'Europe/Athens',                    short:'Athens',        search:['Athens','Bucharest','Greece','Romania','EET']},
-   {display:'(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius', tz:'Europe/Helsinki',  short:'Helsinki',      search:['Helsinki','Kyiv','Kiev','Riga','Sofia','Tallinn','Vilnius','Finland','Ukraine','Latvia','Bulgaria','Estonia','Lithuania','EET']},
-   {display:'(UTC+02:00) Cairo',                         tz:'Africa/Cairo',                     short:'Cairo',         search:['Cairo','Egypt','EET']},
-   {display:'(UTC+02:00) Jerusalem',                     tz:'Asia/Jerusalem',                   short:'Jerusalem',     search:['Jerusalem','Israel','IST','Tel Aviv']},
-   {display:'(UTC+02:00) Kaliningrad',                   tz:'Europe/Kaliningrad',               short:'Kaliningrad',   search:['Kaliningrad','Russia','EET']},
-   {display:'(UTC+02:00) Harare, Pretoria',              tz:'Africa/Johannesburg',              short:'Johannesburg',  search:['Johannesburg','Cape Town','Harare','Pretoria','South Africa','Zimbabwe','SAST','CAT']},
-   /* UTC+3 */
-   {display:'(UTC+03:00) Baghdad',                       tz:'Asia/Baghdad',                     short:'Baghdad',       search:['Baghdad','Iraq','AST']},
-   {display:'(UTC+03:00) Istanbul',                      tz:'Europe/Istanbul',                  short:'Istanbul',      search:['Istanbul','Turkey','Ankara','TRT']},
-   {display:'(UTC+03:00) Kuwait, Riyadh',                tz:'Asia/Riyadh',                      short:'Riyadh',        search:['Riyadh','Kuwait','Saudi Arabia','AST']},
-   {display:'(UTC+03:00) Moscow, St. Petersburg',        tz:'Europe/Moscow',                    short:'Moscow',        search:['Moscow','St. Petersburg','Saint Petersburg','Volgograd','Russia','MSK']},
-   {display:'(UTC+03:00) Nairobi',                       tz:'Africa/Nairobi',                   short:'Nairobi',       search:['Nairobi','Kenya','EAT']},
-   {display:'(UTC+03:30) Tehran',                        tz:'Asia/Tehran',                      short:'Tehran',        search:['Tehran','Iran','IRST']},
-   /* UTC+4 */
-   {display:'(UTC+04:00) Abu Dhabi, Muscat',             tz:'Asia/Dubai',                       short:'Dubai',         search:['Dubai','Abu Dhabi','Muscat','UAE','Oman','GST']},
-   {display:'(UTC+04:00) Baku',                          tz:'Asia/Baku',                        short:'Baku',          search:['Baku','Azerbaijan','AZT']},
-   {display:'(UTC+04:00) Yerevan',                       tz:'Asia/Yerevan',                     short:'Yerevan',       search:['Yerevan','Armenia','AMT']},
-   {display:'(UTC+04:30) Kabul',                         tz:'Asia/Kabul',                       short:'Kabul',         search:['Kabul','Afghanistan','AFT']},
-   /* UTC+5 */
-   {display:'(UTC+05:00) Ekaterinburg',                  tz:'Asia/Yekaterinburg',               short:'Ekaterinburg',  search:['Ekaterinburg','Yekaterinburg','Russia','YEKT']},
-   {display:'(UTC+05:00) Islamabad, Karachi',            tz:'Asia/Karachi',                     short:'Karachi',       search:['Karachi','Islamabad','Pakistan','PKT']},
-   {display:'(UTC+05:00) Ashgabat, Tashkent',            tz:'Asia/Tashkent',                    short:'Tashkent',      search:['Tashkent','Ashgabat','Uzbekistan','Turkmenistan','UZT']},
-   {display:'(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi', tz:'Asia/Kolkata',               short:'Kolkata',       search:['Kolkata','Calcutta','Chennai','Madras','Mumbai','Bombay','New Delhi','India','IST']},
-   {display:'(UTC+05:30) Sri Jayawardenepura',           tz:'Asia/Colombo',                     short:'Colombo',       search:['Colombo','Sri Lanka','SLST']},
-   {display:'(UTC+05:45) Kathmandu',                     tz:'Asia/Kathmandu',                   short:'Kathmandu',     search:['Kathmandu','Nepal','NPT']},
-   /* UTC+6 */
-   {display:'(UTC+06:00) Dhaka',                         tz:'Asia/Dhaka',                       short:'Dhaka',         search:['Dhaka','Bangladesh','BST']},
-   {display:'(UTC+06:30) Yangon (Rangoon)',               tz:'Asia/Yangon',                      short:'Yangon',        search:['Yangon','Rangoon','Myanmar','MMT']},
-   /* UTC+7 */
-   {display:'(UTC+07:00) Bangkok, Hanoi, Jakarta',       tz:'Asia/Bangkok',                     short:'Bangkok',       search:['Bangkok','Hanoi','Jakarta','Thailand','Vietnam','Indonesia','ICT']},
-   {display:'(UTC+07:00) Krasnoyarsk',                   tz:'Asia/Krasnoyarsk',                 short:'Krasnoyarsk',   search:['Krasnoyarsk','Russia','KRAT']},
-   /* UTC+8 */
-   {display:'(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi', tz:'Asia/Shanghai',            short:'Beijing',       search:['Beijing','Shanghai','Chongqing','Hong Kong','Urumqi','China','CST']},
-   {display:'(UTC+08:00) Kuala Lumpur, Singapore',       tz:'Asia/Singapore',                   short:'Singapore',     search:['Singapore','Kuala Lumpur','Malaysia','SGT','MYT']},
-   {display:'(UTC+08:00) Taipei',                        tz:'Asia/Taipei',                      short:'Taipei',        search:['Taipei','Taiwan','CST']},
-   {display:'(UTC+08:00) Perth',                         tz:'Australia/Perth',                  short:'Perth',         search:['Perth','Australia','AWST']},
-   {display:'(UTC+08:00) Irkutsk',                       tz:'Asia/Irkutsk',                     short:'Irkutsk',       search:['Irkutsk','Russia','IRKT']},
-   /* UTC+9 */
-   {display:'(UTC+09:00) Osaka, Sapporo, Tokyo',         tz:'Asia/Tokyo',                       short:'Tokyo',         search:['Tokyo','Osaka','Sapporo','Japan','JST']},
-   {display:'(UTC+09:00) Seoul',                         tz:'Asia/Seoul',                       short:'Seoul',         search:['Seoul','Korea','KST']},
-   {display:'(UTC+09:00) Yakutsk',                       tz:'Asia/Yakutsk',                     short:'Yakutsk',       search:['Yakutsk','Russia','YAKT']},
-   {display:'(UTC+09:30) Adelaide',                      tz:'Australia/Adelaide',               short:'Adelaide',      search:['Adelaide','Australia','ACST']},
-   {display:'(UTC+09:30) Darwin',                        tz:'Australia/Darwin',                 short:'Darwin',        search:['Darwin','Australia','ACST']},
-   /* UTC+10 */
-   {display:'(UTC+10:00) Brisbane',                      tz:'Australia/Brisbane',               short:'Brisbane',      search:['Brisbane','Australia','AEST']},
-   {display:'(UTC+10:00) Canberra, Melbourne, Sydney',   tz:'Australia/Sydney',                 short:'Sydney',        search:['Sydney','Melbourne','Canberra','Australia','AEST']},
-   {display:'(UTC+10:00) Vladivostok',                   tz:'Asia/Vladivostok',                 short:'Vladivostok',   search:['Vladivostok','Russia','VLAT']},
-   /* UTC+11 */
-   {display:'(UTC+11:00) Solomon Is., New Caledonia',    tz:'Pacific/Guadalcanal',              short:'Honiara',       search:['Solomon Islands','Honiara','New Caledonia','SBT']},
-   /* UTC+12 */
-   {display:'(UTC+12:00) Auckland, Wellington',          tz:'Pacific/Auckland',                 short:'Auckland',      search:['Auckland','Wellington','New Zealand','NZST']},
-   {display:'(UTC+12:00) Fiji',                          tz:'Pacific/Fiji',                     short:'Fiji',          search:['Fiji','Suva','FJT']},
-   {display:'(UTC+12:00) Petropavlovsk-Kamchatsky',      tz:'Asia/Kamchatka',                   short:'Kamchatka',     search:['Kamchatka','Petropavlovsk','Russia','PETT']},
-   {display:"(UTC+13:00) Nuku'alofa",                    tz:'Pacific/Tongatapu',                short:"Nuku'alofa",    search:['Tonga','Tongatapu','TOT']}
+   /* ── UTC-12 ─────────────────────────────────────────────── */
+   {display:'(UTC-12:00) International Date Line West',
+    tz:'Etc/GMT+12',                     tzname:'Dateline Standard Time',
+    short:'Dateline',    search:['dateline','international date line','GMT-12','UTC-12']},
+   /* ── UTC-11 ─────────────────────────────────────────────── */
+   {display:'(UTC-11:00) Coordinated Universal Time-11',
+    tz:'Pacific/Pago_Pago',              tzname:'UTC-11',
+    short:'UTC-11',      search:['UTC-11','Pago Pago','Samoa','American Samoa','Niue']},
+   /* ── UTC-10 ─────────────────────────────────────────────── */
+   {display:'(UTC-10:00) Hawaii',
+    tz:'Pacific/Honolulu',               tzname:'Hawaiian Standard Time',
+    short:'Hawaii',      search:['Hawaii','Honolulu','HST','Hawaiian','Cook Islands','French Polynesia']},
+   /* ── UTC-09 ─────────────────────────────────────────────── */
+   {display:'(UTC-09:00) Alaska',
+    tz:'America/Anchorage',              tzname:'Alaskan Standard Time',
+    short:'Alaska',      search:['Alaska','Anchorage','AKST','Alaskan']},
+   /* ── UTC-08 ─────────────────────────────────────────────── */
+   {display:'(UTC-08:00) Pacific Time (US & Canada)',
+    tz:'America/Los_Angeles',            tzname:'Pacific Standard Time',
+    short:'Pacific Time', search:['Pacific','Los Angeles','Vancouver','Seattle','Portland','PST','PDT']},
+   /* ── UTC-07 ─────────────────────────────────────────────── */
+   {display:'(UTC-07:00) Mountain Time (US & Canada)',
+    tz:'America/Denver',                 tzname:'Mountain Standard Time',
+    short:'Mountain Time', search:['Mountain','Denver','Salt Lake City','MST','MDT']},
+   {display:'(UTC-07:00) Arizona',
+    tz:'America/Phoenix',                tzname:'US Mountain Standard Time',
+    short:'Arizona',     search:['Arizona','Phoenix','US Mountain']},
+   /* ── UTC-06 ─────────────────────────────────────────────── */
+   {display:'(UTC-06:00) Central Time (US & Canada)',
+    tz:'America/Chicago',                tzname:'Central Standard Time',
+    short:'Central Time', search:['Central','Chicago','Dallas','Houston','Winnipeg','CST','CDT']},
+   {display:'(UTC-06:00) Guadalajara, Mexico City, Monterrey',
+    tz:'America/Mexico_City',            tzname:'Central Standard Time (Mexico)',
+    short:'Mexico City', search:['Mexico City','Guadalajara','Monterrey','Mexico']},
+   {display:'(UTC-06:00) Central America',
+    tz:'America/Guatemala',              tzname:'Central America Standard Time',
+    short:'Central America', search:['Central America','Guatemala','Belize','El Salvador','Honduras','Nicaragua','Costa Rica']},
+   {display:'(UTC-06:00) Saskatchewan',
+    tz:'America/Regina',                 tzname:'Canada Central Standard Time',
+    short:'Saskatchewan', search:['Saskatchewan','Regina','Canada Central']},
+   /* ── UTC-05 ─────────────────────────────────────────────── */
+   {display:'(UTC-05:00) Eastern Time (US & Canada)',
+    tz:'America/New_York',               tzname:'Eastern Standard Time',
+    short:'Eastern Time', search:['Eastern','New York','Toronto','Boston','Miami','Atlanta','EST','EDT']},
+   {display:'(UTC-05:00) Bogota, Lima, Quito, Rio Branco',
+    tz:'America/Bogota',                 tzname:'SA Pacific Standard Time',
+    short:'Bogota',      search:['Bogota','Lima','Quito','Rio Branco','Colombia','Peru','Ecuador','SA Pacific']},
+   {display:'(UTC-05:00) Havana',
+    tz:'America/Havana',                 tzname:'Cuba Standard Time',
+    short:'Havana',      search:['Havana','Cuba','CST']},
+   /* ── UTC-04:30 ───────────────────────────────────────────── */
+   {display:'(UTC-04:30) Caracas',
+    tz:'America/Caracas',                tzname:'Venezuela Standard Time',
+    short:'Caracas',     search:['Caracas','Venezuela','VET']},
+   /* ── UTC-04 ─────────────────────────────────────────────── */
+   {display:'(UTC-04:00) Atlantic Time (Canada)',
+    tz:'America/Halifax',                tzname:'Atlantic Standard Time',
+    short:'Halifax',     search:['Atlantic','Halifax','Nova Scotia','Bermuda','AST','ADT']},
+   {display:'(UTC-04:00) Georgetown, La Paz, Manaus, San Juan',
+    tz:'America/La_Paz',                 tzname:'SA Western Standard Time',
+    short:'La Paz',      search:['Georgetown','La Paz','Manaus','San Juan','Bolivia','Guyana','Puerto Rico','SA Western']},
+   {display:'(UTC-04:00) Asuncion',
+    tz:'America/Asuncion',               tzname:'Paraguay Standard Time',
+    short:'Asuncion',    search:['Asuncion','Paraguay','PYT']},
+   /* ── UTC-03:30 ───────────────────────────────────────────── */
+   {display:'(UTC-03:30) Newfoundland',
+    tz:'America/St_Johns',               tzname:'Newfoundland Standard Time',
+    short:'Newfoundland', search:['Newfoundland','St. Johns','NST','NDT']},
+   /* ── UTC-03 ─────────────────────────────────────────────── */
+   {display:'(UTC-03:00) Brasilia',
+    tz:'America/Sao_Paulo',              tzname:'E. South America Standard Time',
+    short:'Brasilia',    search:['Brasilia','Sao Paulo','São Paulo','Brazil','BRT','E. South America']},
+   {display:'(UTC-03:00) City of Buenos Aires',
+    tz:'America/Argentina/Buenos_Aires', tzname:'Argentina Standard Time',
+    short:'Buenos Aires', search:['Buenos Aires','Argentina','ART']},
+   {display:'(UTC-03:00) Cayenne, Fortaleza',
+    tz:'America/Cayenne',                tzname:'SA Eastern Standard Time',
+    short:'Cayenne',     search:['Cayenne','Fortaleza','French Guiana','Suriname','SA Eastern']},
+   {display:'(UTC-03:00) Greenland',
+    tz:'America/Godthab',                tzname:'Greenland Standard Time',
+    short:'Greenland',   search:['Greenland','Nuuk','WGT']},
+   {display:'(UTC-03:00) Montevideo',
+    tz:'America/Montevideo',             tzname:'Montevideo Standard Time',
+    short:'Montevideo',  search:['Montevideo','Uruguay','UYT']},
+   {display:'(UTC-03:00) Santiago',
+    tz:'America/Santiago',               tzname:'Pacific SA Standard Time',
+    short:'Santiago',    search:['Santiago','Chile','CLT','Pacific SA']},
+   /* ── UTC-02 ─────────────────────────────────────────────── */
+   {display:'(UTC-02:00) Coordinated Universal Time-02',
+    tz:'Etc/GMT+2',                      tzname:'UTC-02',
+    short:'UTC-02',      search:['UTC-02','South Georgia']},
+   /* ── UTC-01 ─────────────────────────────────────────────── */
+   {display:'(UTC-01:00) Cabo Verde Is.',
+    tz:'Atlantic/Cape_Verde',            tzname:'Cape Verde Standard Time',
+    short:'Cabo Verde',  search:['Cabo Verde','Cape Verde','CVT']},
+   /* ── UTC ────────────────────────────────────────────────── */
+   {display:'(UTC) Coordinated Universal Time',
+    tz:'UTC',                            tzname:'UTC',
+    short:'UTC',         search:['UTC','Universal','Coordinated Universal Time']},
+   {display:'(UTC) Dublin, Edinburgh, Lisbon, London',
+    tz:'Europe/London',                  tzname:'GMT Standard Time',
+    short:'London',      search:['London','Dublin','Edinburgh','Lisbon','UK','Ireland','England','Wales','GMT','BST','WET','GMT Standard']},
+   {display:'(UTC) Monrovia, Reykjavik',
+    tz:'Atlantic/Reykjavik',             tzname:'Greenwich Standard Time',
+    short:'Reykjavik',   search:['Reykjavik','Monrovia','Iceland','Liberia','Ghana','Greenwich Standard']},
+   {display:'(UTC) Casablanca',
+    tz:'Africa/Casablanca',              tzname:'Morocco Standard Time',
+    short:'Casablanca',  search:['Casablanca','Morocco','Rabat','Morocco Standard']},
+   /* ── UTC+01 ─────────────────────────────────────────────── */
+   {display:'(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna',
+    tz:'Europe/Berlin',                  tzname:'W. Europe Standard Time',
+    short:'Berlin',      search:['Berlin','Amsterdam','Bern','Rome','Stockholm','Vienna','Germany','Switzerland','Netherlands','Italy','Sweden','Austria','CET','W. Europe']},
+   {display:'(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague',
+    tz:'Europe/Budapest',                tzname:'Central Europe Standard Time',
+    short:'Budapest',    search:['Belgrade','Bratislava','Budapest','Ljubljana','Prague','Serbia','Slovakia','Hungary','Slovenia','Czech Republic','Central Europe Standard']},
+   {display:'(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb',
+    tz:'Europe/Warsaw',                  tzname:'Central European Standard Time',
+    short:'Warsaw',      search:['Sarajevo','Skopje','Warsaw','Zagreb','Poland','Bosnia','Macedonia','Croatia','Central European Standard']},
+   {display:'(UTC+01:00) Brussels, Copenhagen, Madrid, Paris',
+    tz:'Europe/Paris',                   tzname:'Romance Standard Time',
+    short:'Paris',       search:['Paris','Brussels','Copenhagen','Madrid','France','Belgium','Denmark','Spain','Romance Standard']},
+   {display:'(UTC+01:00) West Central Africa',
+    tz:'Africa/Lagos',                   tzname:'W. Central Africa Standard Time',
+    short:'Lagos',       search:['Lagos','Nigeria','West Africa','WAT','W. Central Africa']},
+   {display:'(UTC+01:00) Windhoek',
+    tz:'Africa/Windhoek',                tzname:'Namibia Standard Time',
+    short:'Windhoek',    search:['Windhoek','Namibia','WAT']},
+   /* ── UTC+02 ─────────────────────────────────────────────── */
+   {display:'(UTC+02:00) Athens, Bucharest',
+    tz:'Europe/Athens',                  tzname:'GTB Standard Time',
+    short:'Athens',      search:['Athens','Bucharest','Greece','Romania','EET','GTB']},
+   {display:'(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius',
+    tz:'Europe/Helsinki',                tzname:'FLE Standard Time',
+    short:'Helsinki',    search:['Helsinki','Kyiv','Kiev','Riga','Sofia','Tallinn','Vilnius','Finland','Ukraine','Latvia','Bulgaria','Estonia','Lithuania','EET','FLE']},
+   {display:'(UTC+02:00) Cairo',
+    tz:'Africa/Cairo',                   tzname:'Egypt Standard Time',
+    short:'Cairo',       search:['Cairo','Egypt','EET']},
+   {display:'(UTC+02:00) Jerusalem',
+    tz:'Asia/Jerusalem',                 tzname:'Israel Standard Time',
+    short:'Jerusalem',   search:['Jerusalem','Israel','IST','Tel Aviv','Israel Standard']},
+   {display:'(UTC+02:00) Harare, Pretoria',
+    tz:'Africa/Johannesburg',            tzname:'South Africa Standard Time',
+    short:'Johannesburg', search:['Harare','Pretoria','Johannesburg','Cape Town','South Africa','Zimbabwe','SAST','CAT','South Africa Standard']},
+   {display:'(UTC+02:00) Amman',
+    tz:'Asia/Amman',                     tzname:'Jordan Standard Time',
+    short:'Amman',       search:['Amman','Jordan','EEST']},
+   {display:'(UTC+02:00) Beirut',
+    tz:'Asia/Beirut',                    tzname:'Middle East Standard Time',
+    short:'Beirut',      search:['Beirut','Lebanon','EEST','Middle East Standard']},
+   {display:'(UTC+02:00) Damascus',
+    tz:'Asia/Damascus',                  tzname:'Syria Standard Time',
+    short:'Damascus',    search:['Damascus','Syria','EEST']},
+   {display:'(UTC+02:00) Istanbul',
+    tz:'Europe/Istanbul',                tzname:'Turkey Standard Time',
+    short:'Istanbul',    search:['Istanbul','Turkey','Ankara','TRT','Türkiye','Turkey Standard']},
+   /* ── UTC+03 ─────────────────────────────────────────────── */
+   {display:'(UTC+03:00) Baghdad',
+    tz:'Asia/Baghdad',                   tzname:'Arabic Standard Time',
+    short:'Baghdad',     search:['Baghdad','Iraq','AST','Arabic Standard']},
+   {display:'(UTC+03:00) Kuwait, Riyadh',
+    tz:'Asia/Riyadh',                    tzname:'Arab Standard Time',
+    short:'Riyadh',      search:['Riyadh','Kuwait','Saudi Arabia','Qatar','Yemen','Bahrain','AST','Arab Standard']},
+   {display:'(UTC+03:00) Moscow, St. Petersburg, Volgograd (RTZ 2)',
+    tz:'Europe/Moscow',                  tzname:'Russian Standard Time',
+    short:'Moscow',      search:['Moscow','St. Petersburg','Saint Petersburg','Volgograd','Russia','MSK','Russian Standard']},
+   {display:'(UTC+03:00) Nairobi',
+    tz:'Africa/Nairobi',                 tzname:'E. Africa Standard Time',
+    short:'Nairobi',     search:['Nairobi','Kenya','Tanzania','Uganda','Ethiopia','Somalia','EAT','E. Africa']},
+   {display:'(UTC+03:00) Minsk',
+    tz:'Europe/Minsk',                   tzname:'Belarus Standard Time',
+    short:'Minsk',       search:['Minsk','Belarus','FET']},
+   /* ── UTC+03:30 ───────────────────────────────────────────── */
+   {display:'(UTC+03:30) Tehran',
+    tz:'Asia/Tehran',                    tzname:'Iran Standard Time',
+    short:'Tehran',      search:['Tehran','Iran','IRST','IRDT']},
+   /* ── UTC+04 ─────────────────────────────────────────────── */
+   {display:'(UTC+04:00) Abu Dhabi, Muscat',
+    tz:'Asia/Dubai',                     tzname:'Arabian Standard Time',
+    short:'Dubai',       search:['Dubai','Abu Dhabi','Muscat','UAE','Oman','GST','Arabian Standard']},
+   {display:'(UTC+04:00) Baku',
+    tz:'Asia/Baku',                      tzname:'Azerbaijan Standard Time',
+    short:'Baku',        search:['Baku','Azerbaijan','AZT']},
+   {display:'(UTC+04:00) Yerevan',
+    tz:'Asia/Yerevan',                   tzname:'Caucasus Standard Time',
+    short:'Yerevan',     search:['Yerevan','Armenia','AMT','Caucasus Standard']},
+   {display:'(UTC+04:00) Port Louis',
+    tz:'Indian/Mauritius',               tzname:'Mauritius Standard Time',
+    short:'Port Louis',  search:['Port Louis','Mauritius','Reunion','MUT']},
+   {display:'(UTC+04:00) Tbilisi',
+    tz:'Asia/Tbilisi',                   tzname:'Georgian Standard Time',
+    short:'Tbilisi',     search:['Tbilisi','Georgia','GET']},
+   /* ── UTC+04:30 ───────────────────────────────────────────── */
+   {display:'(UTC+04:30) Kabul',
+    tz:'Asia/Kabul',                     tzname:'Afghanistan Standard Time',
+    short:'Kabul',       search:['Kabul','Afghanistan','AFT']},
+   /* ── UTC+05 ─────────────────────────────────────────────── */
+   {display:'(UTC+05:00) Islamabad, Karachi',
+    tz:'Asia/Karachi',                   tzname:'Pakistan Standard Time',
+    short:'Karachi',     search:['Karachi','Islamabad','Pakistan','PKT']},
+   {display:'(UTC+05:00) Ashgabat, Tashkent',
+    tz:'Asia/Tashkent',                  tzname:'West Asia Standard Time',
+    short:'Tashkent',    search:['Tashkent','Ashgabat','Uzbekistan','Turkmenistan','UZT','West Asia']},
+   /* ── UTC+05:30 ───────────────────────────────────────────── */
+   {display:'(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi',
+    tz:'Asia/Kolkata',                   tzname:'India Standard Time',
+    short:'Kolkata',     search:['Kolkata','Calcutta','Chennai','Madras','Mumbai','Bombay','New Delhi','India','IST']},
+   {display:'(UTC+05:30) Sri Jayawardenepura',
+    tz:'Asia/Colombo',                   tzname:'Sri Lanka Standard Time',
+    short:'Colombo',     search:['Colombo','Sri Lanka','Sri Jayawardenepura','SLST']},
+   /* ── UTC+05:45 ───────────────────────────────────────────── */
+   {display:'(UTC+05:45) Kathmandu',
+    tz:'Asia/Kathmandu',                 tzname:'Nepal Standard Time',
+    short:'Kathmandu',   search:['Kathmandu','Nepal','NPT']},
+   /* ── UTC+06 ─────────────────────────────────────────────── */
+   {display:'(UTC+06:00) Astana',
+    tz:'Asia/Almaty',                    tzname:'Central Asia Standard Time',
+    short:'Astana',      search:['Astana','Almaty','Kazakhstan','Kyrgyzstan','ALMT','Central Asia']},
+   {display:'(UTC+06:00) Dhaka',
+    tz:'Asia/Dhaka',                     tzname:'Bangladesh Standard Time',
+    short:'Dhaka',       search:['Dhaka','Bangladesh','Bhutan','BST']},
+   /* ── UTC+06:30 ───────────────────────────────────────────── */
+   {display:'(UTC+06:30) Yangon (Rangoon)',
+    tz:'Asia/Yangon',                    tzname:'Myanmar Standard Time',
+    short:'Yangon',      search:['Yangon','Rangoon','Myanmar','Burma','MMT']},
+   /* ── UTC+07 ─────────────────────────────────────────────── */
+   {display:'(UTC+07:00) Bangkok, Hanoi, Jakarta',
+    tz:'Asia/Bangkok',                   tzname:'SE Asia Standard Time',
+    short:'Bangkok',     search:['Bangkok','Hanoi','Jakarta','Thailand','Vietnam','Indonesia','ICT','SE Asia']},
+   /* ── UTC+08 ─────────────────────────────────────────────── */
+   {display:'(UTC+08:00) Beijing, Chongqing, Hong Kong SAR, Urumqi',
+    tz:'Asia/Shanghai',                  tzname:'China Standard Time',
+    short:'Beijing',     search:['Beijing','Shanghai','Chongqing','Hong Kong','Urumqi','China','Macao','CST']},
+   {display:'(UTC+08:00) Kuala Lumpur, Singapore',
+    tz:'Asia/Singapore',                 tzname:'Singapore Standard Time',
+    short:'Singapore',   search:['Singapore','Kuala Lumpur','Malaysia','Philippines','SGT','MYT']},
+   {display:'(UTC+08:00) Taipei',
+    tz:'Asia/Taipei',                    tzname:'Taipei Standard Time',
+    short:'Taipei',      search:['Taipei','Taiwan','CST']},
+   {display:'(UTC+08:00) Perth',
+    tz:'Australia/Perth',                tzname:'W. Australia Standard Time',
+    short:'Perth',       search:['Perth','Australia','AWST','W. Australia']},
+   {display:'(UTC+08:00) Ulaanbaatar',
+    tz:'Asia/Ulaanbaatar',               tzname:'Ulaanbaatar Standard Time',
+    short:'Ulaanbaatar', search:['Ulaanbaatar','Mongolia','ULAT']},
+   /* ── UTC+09 ─────────────────────────────────────────────── */
+   {display:'(UTC+09:00) Osaka, Sapporo, Tokyo',
+    tz:'Asia/Tokyo',                     tzname:'Tokyo Standard Time',
+    short:'Tokyo',       search:['Tokyo','Osaka','Sapporo','Japan','Palau','JST']},
+   {display:'(UTC+09:00) Seoul',
+    tz:'Asia/Seoul',                     tzname:'Korea Standard Time',
+    short:'Seoul',       search:['Seoul','Korea','North Korea','KST']},
+   /* ── UTC+09:30 ───────────────────────────────────────────── */
+   {display:'(UTC+09:30) Adelaide',
+    tz:'Australia/Adelaide',             tzname:'Cen. Australia Standard Time',
+    short:'Adelaide',    search:['Adelaide','Australia','ACST','Cen. Australia']},
+   {display:'(UTC+09:30) Darwin',
+    tz:'Australia/Darwin',               tzname:'AUS Central Standard Time',
+    short:'Darwin',      search:['Darwin','Australia','ACST','AUS Central']},
+   /* ── UTC+10 ─────────────────────────────────────────────── */
+   {display:'(UTC+10:00) Canberra, Melbourne, Sydney',
+    tz:'Australia/Sydney',               tzname:'AUS Eastern Standard Time',
+    short:'Sydney',      search:['Sydney','Melbourne','Canberra','Australia','AEST','AUS Eastern']},
+   {display:'(UTC+10:00) Brisbane',
+    tz:'Australia/Brisbane',             tzname:'E. Australia Standard Time',
+    short:'Brisbane',    search:['Brisbane','Australia','AEST','E. Australia']},
+   {display:'(UTC+10:00) Guam, Port Moresby',
+    tz:'Pacific/Port_Moresby',           tzname:'West Pacific Standard Time',
+    short:'Port Moresby', search:['Guam','Port Moresby','Papua New Guinea','Northern Mariana Islands','Micronesia','ChST','West Pacific']},
+   /* ── UTC+11 ─────────────────────────────────────────────── */
+   {display:'(UTC+11:00) Solomon Is., New Caledonia',
+    tz:'Pacific/Guadalcanal',            tzname:'Central Pacific Standard Time',
+    short:'Honiara',     search:['Solomon Islands','Honiara','New Caledonia','Norfolk Island','SBT','Central Pacific']},
+   /* ── UTC+12 ─────────────────────────────────────────────── */
+   {display:'(UTC+12:00) Auckland, Wellington',
+    tz:'Pacific/Auckland',               tzname:'New Zealand Standard Time',
+    short:'Auckland',    search:['Auckland','Wellington','New Zealand','NZST']},
+   {display:'(UTC+12:00) Fiji',
+    tz:'Pacific/Fiji',                   tzname:'Fiji Standard Time',
+    short:'Fiji',        search:['Fiji','Suva','FJT']},
+   {display:'(UTC+12:00) Coordinated Universal Time+12',
+    tz:'Pacific/Tarawa',                 tzname:'UTC+12',
+    short:'UTC+12',      search:['UTC+12','Kiribati','Marshall Islands','Tuvalu','Nauru','Wallis and Futuna']},
+   /* ── UTC+13 ─────────────────────────────────────────────── */
+   {display:"(UTC+13:00) Nuku'alofa",
+    tz:'Pacific/Tongatapu',              tzname:'Tonga Standard Time',
+    short:"Nuku'alofa",  search:['Tonga','Tongatapu','TOT']},
+   {display:'(UTC+13:00) Samoa',
+    tz:'Pacific/Apia',                   tzname:'Samoa Standard Time',
+    short:'Samoa',       search:['Samoa','Apia','WST']}
  ];
  /* _timeCityAIdx / _timeCityBIdx initialised in openTime() via findIndex */
 
@@ -4148,7 +4354,8 @@ function _timeRenderCard(elId, cityIdx, now) {
     var html =
       '<div class="time-city-time">' + timeStr + '</div>' +
       '<div class="time-city-date">' + dateStr + '</div>' +
-      '<div class="time-city-offset">' + _timeFmtOff(curOff) + abbrExtra + '</div>';
+      '<div class="time-city-offset">' + _timeFmtOff(curOff) + abbrExtra + '</div>' +
+      '<div class="time-city-tzname">' + city.tzname + '</div>';
     if (dst.hasDST) {
       if (dst.active) {
         html += '<div class="time-city-dst time-dst-on">&#9728; Daylight saving time active</div>';
@@ -5293,13 +5500,15 @@ document.addEventListener('keydown', e => {
    if (!isArrow) return;
 
    /* do not hijack arrow keys while the user is typing / using a native select or
-      a filter/calc input — but allow navigation out of the global search bar */
+      a filter/calc input — but allow navigation out of the global search bar and
+      the search-panel input (both are "pass-through" for tab navigation) */
    if (inInput && !contentFocused) {
-     const isGlobalSearch = document.activeElement &&
-                            document.activeElement.id === 'globalSearch';
-     if (isGlobalSearch) {
-       /* blur search field so the arrow continues into tab navigation below */
-       document.activeElement.blur();
+     const ae = document.activeElement;
+     const isNavTransparent = ae &&
+       (ae.id === 'globalSearch' || ae.id === 'searchPanelInput');
+     if (isNavTransparent) {
+       /* blur so the arrow continues into tab navigation below */
+       ae.blur();
      } else {
        return;
      }
