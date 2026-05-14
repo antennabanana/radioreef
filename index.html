@@ -181,6 +181,34 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ant-svg-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ant-svg-label{font-size:10px;color:#5a7080;letter-spacing:.5px;text-align:center}
 .ant-svg-note{font-size:9px;color:#3a5060;line-height:1.4;text-align:center;padding:0 4px}
+
+/* ── time panel ──────────────────────────────────────────────── */
+.time-section{margin-bottom:20px}
+.time-section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #1e2840}
+.time-utc-box{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:22px;text-align:center}
+.time-utc-clock{font-size:52px;font-weight:700;letter-spacing:6px;color:#33ddcc;font-variant-numeric:tabular-nums;line-height:1}
+.time-utc-label{font-size:10px;color:#3a5060;letter-spacing:3px;text-transform:uppercase;margin-top:5px}
+.time-utc-date{font-size:13px;color:#5a7080;letter-spacing:.5px;margin-top:8px}
+.time-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.time-city-card{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:12px}
+.time-select{width:100%;background:#0d1220;border:1px solid #1e2840;border-radius:2px;color:#c0ccd8;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;margin-bottom:10px;cursor:pointer}
+.time-select:focus{outline:none;border-color:#33ddcc}
+.time-city-time{font-size:30px;font-weight:700;letter-spacing:2px;color:#e0e8f0;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:3px}
+.time-city-date{font-size:11px;color:#5a7080;letter-spacing:.3px;margin-bottom:8px}
+.time-city-offset{font-size:12px;color:#44ccff;background:#44ccff0f;border:1px solid #44ccff2a;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block}
+.time-city-dst{font-size:12px;margin-bottom:4px;line-height:1.4}
+.time-dst-on{color:#33ff88}.time-dst-off{color:#9aaabe}.time-dst-none{color:#3a5060}
+.time-city-dst-row{font-size:11px;color:#3a5060;margin-bottom:4px;line-height:1.5}
+.time-diff-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:10px 14px;font-size:13px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center}
+.time-diff-eq{color:#3a5060}.time-diff-info{color:#c0ccd8}.time-diff-info strong{color:#e0e8f0}
+html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar{background:#f0f4f8;border-color:#c8cdd8}
+html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
+html.light .time-utc-clock{color:#009987}
+html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
+html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
+html.light .time-section-label{border-color:#c8cdd8}
+html.light .time-diff-info strong{color:#1e2840}
+@media(max-width:600px){.time-compare-grid{grid-template-columns:1fr}}
 .ant-desc{font-size:14px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
 .ant-props{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:10px}
 .ant-pro,.ant-con{font-size:13px;line-height:1.5;padding-left:14px;position:relative}
@@ -2875,6 +2903,9 @@ let activeBand = null;      /* band id string | null */
 let activeSub  = null;      /* sub-band name string | null */
 let contentFocused = false; /* true while Right-arrow scrolls #detailInner */
 let lastSearchQuery = '';
+let _timeTabInterval = null;
+let _timeCityAIdx    = 16;  /* London (index in TIME_CITIES) */
+let _timeCityBIdx    = 5;   /* New York */
 
 const $ = s => document.querySelector(s);
 
@@ -2883,7 +2914,8 @@ const LIGHT_COLORS = {
   '#ff4444':'#cc2222','#ff8833':'#cc6600','#ffc833':'#aa8800',
   '#aaff33':'#669900','#33ff88':'#00884a','#33aaff':'#0077cc',
   '#aa66ff':'#7744cc','#88ccff':'#2277cc','#ffaa44':'#cc7700',
-  '#ff8844':'#cc5500','#44ccff':'#1155cc','#88ff66':'#117711'
+  '#ff8844':'#cc5500','#44ccff':'#1155cc','#88ff66':'#117711',
+  '#33ddcc':'#009987'
 };
 function isLight(){ return document.documentElement.classList.contains('light'); }
 function tc(c){ return isLight() ? (LIGHT_COLORS[c]||c) : c; }
@@ -3022,6 +3054,16 @@ BANDS.forEach(b => {
   el.dataset.band = 'antennas';
   el.innerHTML = '<span class="label">ANT</span><span class="freq">Antennas</span>';
   el.addEventListener('click', () => openAntennas());
+  bandPanel.appendChild(el);
+})();
+
+/* time button */
+(function(){
+  const el = document.createElement('div');
+  el.className = 'band-btn';
+  el.dataset.band = 'time';
+  el.innerHTML = '<span class="label">TIME</span><span class="freq">World Clock</span>';
+  el.addEventListener('click', () => openTime());
   bandPanel.appendChild(el);
 })();
 
@@ -3237,6 +3279,8 @@ function openPropagation() {
    ══════════════════════════════════════════════════════════════ */
 function goHome() {
   blurContent();
+  clearInterval(_timeTabInterval);
+  _timeTabInterval = null;
   activeView = 'intro';
   activeBand = null;
   activeSub  = null;
@@ -3800,6 +3844,306 @@ function openAntennas() {
   });
 
   d.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TIME PANEL — World clock & city comparison
+   ══════════════════════════════════════════════════════════════ */
+var TIME_CITIES = [
+  {name:'UTC',           tz:'UTC'},
+  {name:'Anchorage',     tz:'America/Anchorage'},
+  {name:'Los Angeles',   tz:'America/Los_Angeles'},
+  {name:'Denver',        tz:'America/Denver'},
+  {name:'Chicago',       tz:'America/Chicago'},
+  {name:'New York',      tz:'America/New_York'},
+  {name:'Toronto',       tz:'America/Toronto'},
+  {name:'Mexico City',   tz:'America/Mexico_City'},
+  {name:'Havana',        tz:'America/Havana'},
+  {name:'Bogota',        tz:'America/Bogota'},
+  {name:'Lima',          tz:'America/Lima'},
+  {name:'Caracas',       tz:'America/Caracas'},
+  {name:'Santiago',      tz:'America/Santiago'},
+  {name:'Sao Paulo',     tz:'America/Sao_Paulo'},
+  {name:'Buenos Aires',  tz:'America/Argentina/Buenos_Aires'},
+  {name:'Reykjavik',     tz:'Atlantic/Reykjavik'},
+  {name:'London',        tz:'Europe/London'},
+  {name:'Lisbon',        tz:'Europe/Lisbon'},
+  {name:'Dublin',        tz:'Europe/Dublin'},
+  {name:'Casablanca',    tz:'Africa/Casablanca'},
+  {name:'Paris',         tz:'Europe/Paris'},
+  {name:'Madrid',        tz:'Europe/Madrid'},
+  {name:'Berlin',        tz:'Europe/Berlin'},
+  {name:'Amsterdam',     tz:'Europe/Amsterdam'},
+  {name:'Rome',          tz:'Europe/Rome'},
+  {name:'Prague',        tz:'Europe/Prague'},
+  {name:'Vienna',        tz:'Europe/Vienna'},
+  {name:'Warsaw',        tz:'Europe/Warsaw'},
+  {name:'Stockholm',     tz:'Europe/Stockholm'},
+  {name:'Helsinki',      tz:'Europe/Helsinki'},
+  {name:'Athens',        tz:'Europe/Athens'},
+  {name:'Bucharest',     tz:'Europe/Bucharest'},
+  {name:'Kyiv',          tz:'Europe/Kiev'},
+  {name:'Istanbul',      tz:'Europe/Istanbul'},
+  {name:'Moscow',        tz:'Europe/Moscow'},
+  {name:'Lagos',         tz:'Africa/Lagos'},
+  {name:'Cairo',         tz:'Africa/Cairo'},
+  {name:'Nairobi',       tz:'Africa/Nairobi'},
+  {name:'Johannesburg',  tz:'Africa/Johannesburg'},
+  {name:'Baghdad',       tz:'Asia/Baghdad'},
+  {name:'Jerusalem',     tz:'Asia/Jerusalem'},
+  {name:'Riyadh',        tz:'Asia/Riyadh'},
+  {name:'Tehran',        tz:'Asia/Tehran'},
+  {name:'Dubai',         tz:'Asia/Dubai'},
+  {name:'Karachi',       tz:'Asia/Karachi'},
+  {name:'Kolkata',       tz:'Asia/Kolkata'},
+  {name:'Kathmandu',     tz:'Asia/Kathmandu'},
+  {name:'Dhaka',         tz:'Asia/Dhaka'},
+  {name:'Colombo',       tz:'Asia/Colombo'},
+  {name:'Yangon',        tz:'Asia/Yangon'},
+  {name:'Bangkok',       tz:'Asia/Bangkok'},
+  {name:'Singapore',     tz:'Asia/Singapore'},
+  {name:'Kuala Lumpur',  tz:'Asia/Kuala_Lumpur'},
+  {name:'Jakarta',       tz:'Asia/Jakarta'},
+  {name:'Hong Kong',     tz:'Asia/Hong_Kong'},
+  {name:'Shanghai',      tz:'Asia/Shanghai'},
+  {name:'Taipei',        tz:'Asia/Taipei'},
+  {name:'Seoul',         tz:'Asia/Seoul'},
+  {name:'Tokyo',         tz:'Asia/Tokyo'},
+  {name:'Vladivostok',   tz:'Asia/Vladivostok'},
+  {name:'Perth',         tz:'Australia/Perth'},
+  {name:'Adelaide',      tz:'Australia/Adelaide'},
+  {name:'Brisbane',      tz:'Australia/Brisbane'},
+  {name:'Sydney',        tz:'Australia/Sydney'},
+  {name:'Melbourne',     tz:'Australia/Melbourne'},
+  {name:'Auckland',      tz:'Pacific/Auckland'},
+  {name:'Honolulu',      tz:'Pacific/Honolulu'},
+  {name:'Suva',          tz:'Pacific/Fiji'}
+];
+/* _timeCityAIdx=16 (London), _timeCityBIdx=5 (New York) set at module level */
+
+function _timeOffsetMinutes(tz, date) {
+  try {
+    var d = date || new Date();
+    var parts = new Intl.DateTimeFormat('en', {
+      timeZone: tz, timeZoneName: 'shortOffset'
+    }).formatToParts(d);
+    var tzn = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') { tzn = parts[i].value; break; }
+    }
+    if (!tzn || tzn === 'GMT') return 0;
+    var m = tzn.match(/GMT([+-])(\d+)(?::(\d+))?/);
+    if (!m) return 0;
+    return (m[1] === '+' ? 1 : -1) * (parseInt(m[2]) * 60 + parseInt(m[3] || '0'));
+  } catch(e) { return 0; }
+}
+
+function _timeTZAbbr(tz, date) {
+  try {
+    var d = date || new Date();
+    var parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, timeZoneName: 'short'
+    }).formatToParts(d);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') return parts[i].value;
+    }
+    return '';
+  } catch(e) { return ''; }
+}
+
+function _timeDSTInfo(tz) {
+  try {
+    var year = new Date().getFullYear();
+    var jan  = new Date(year, 0, 15, 12, 0, 0);
+    var jul  = new Date(year, 6, 15, 12, 0, 0);
+    var janOff = _timeOffsetMinutes(tz, jan);
+    var julOff = _timeOffsetMinutes(tz, jul);
+    if (janOff === julOff) {
+      return { hasDST:false, active:false,
+               stdOffset:janOff, dstOffset:janOff,
+               stdAbbr:_timeTZAbbr(tz, jan), dstAbbr:_timeTZAbbr(tz, jan) };
+    }
+    var stdOffset = Math.min(janOff, julOff);
+    var dstOffset = Math.max(janOff, julOff);
+    /* stdDate = a date when standard time is in effect */
+    var stdDate = julOff > janOff ? jan : jul;
+    var dstDate = julOff > janOff ? jul : jan;
+    var curOff  = _timeOffsetMinutes(tz, new Date());
+    return { hasDST:true, active: curOff === dstOffset,
+             stdOffset:stdOffset, dstOffset:dstOffset,
+             stdAbbr:_timeTZAbbr(tz, stdDate),
+             dstAbbr:_timeTZAbbr(tz, dstDate) };
+  } catch(e) {
+    return { hasDST:false, active:false, stdOffset:0, dstOffset:0, stdAbbr:'', dstAbbr:'' };
+  }
+}
+
+function _timeFmtOff(mins) {
+  if (mins === 0) return 'UTC';
+  var sign = mins > 0 ? '+' : '-';
+  var a    = Math.abs(mins);
+  return 'UTC' + sign + String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
+}
+
+function _timeRenderCard(elId, cityIdx, now) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var city = TIME_CITIES[cityIdx];
+  if (!city) return;
+  try {
+    var timeStr = now.toLocaleTimeString('en-GB', {
+      timeZone: city.tz, hour12: false,
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    var dateStr = now.toLocaleDateString('en-GB', {
+      timeZone: city.tz, weekday: 'short',
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+    var curOff = _timeOffsetMinutes(city.tz, now);
+    var abbr   = _timeTZAbbr(city.tz, now);
+    var dst    = _timeDSTInfo(city.tz);
+    /* don't repeat numeric offsets like "GMT+8" — only show named abbreviations */
+    var abbrExtra = (abbr && abbr.indexOf('GMT') === -1)
+      ? ' &nbsp;&#183;&nbsp; ' + abbr : '';
+    var html =
+      '<div class="time-city-time">' + timeStr + '</div>' +
+      '<div class="time-city-date">' + dateStr + '</div>' +
+      '<div class="time-city-offset">' + _timeFmtOff(curOff) + abbrExtra + '</div>';
+    if (dst.hasDST) {
+      if (dst.active) {
+        html += '<div class="time-city-dst time-dst-on">&#9728; Daylight saving time active</div>';
+      } else {
+        html += '<div class="time-city-dst time-dst-off">&#9790; Standard time &mdash; DST not active</div>';
+      }
+      html +=
+        '<div class="time-city-dst-row">' +
+          'Standard: ' + dst.stdAbbr + ' &nbsp;' + _timeFmtOff(dst.stdOffset) +
+          ' &nbsp;&#183;&nbsp; DST: ' + dst.dstAbbr + ' &nbsp;' + _timeFmtOff(dst.dstOffset) +
+        '</div>';
+    } else {
+      html += '<div class="time-city-dst time-dst-none">&#8212; No daylight saving time</div>';
+    }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="time-city-time">--:--:--</div>'; }
+}
+
+function _timeTabTick() {
+  if (activeView !== 'time') {
+    clearInterval(_timeTabInterval);
+    _timeTabInterval = null;
+    return;
+  }
+  var now = new Date();
+  /* UTC clock */
+  var utcEl  = document.getElementById('timePanelUtc');
+  var dateEl = document.getElementById('timePanelDate');
+  if (utcEl) {
+    utcEl.textContent =
+      String(now.getUTCHours()).padStart(2, '0') + ':' +
+      String(now.getUTCMinutes()).padStart(2, '0') + ':' +
+      String(now.getUTCSeconds()).padStart(2, '0');
+  }
+  if (dateEl) {
+    dateEl.textContent = now.toLocaleDateString('en-GB', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+    });
+  }
+  /* city cards */
+  _timeRenderCard('timeCityCardA', _timeCityAIdx, now);
+  _timeRenderCard('timeCityCardB', _timeCityBIdx, now);
+  /* diff bar */
+  var diffEl = document.getElementById('timeDiffBar');
+  if (diffEl) {
+    var offA = _timeOffsetMinutes(TIME_CITIES[_timeCityAIdx].tz, now);
+    var offB = _timeOffsetMinutes(TIME_CITIES[_timeCityBIdx].tz, now);
+    var diff = offA - offB;
+    if (diff === 0) {
+      diffEl.innerHTML =
+        '<span class="time-diff-eq">&#9670; Same UTC offset &mdash; both cities show the same time</span>';
+    } else {
+      var nameA    = TIME_CITIES[_timeCityAIdx].name;
+      var nameB    = TIME_CITIES[_timeCityBIdx].name;
+      var ahead    = diff > 0 ? nameA : nameB;
+      var behind   = diff > 0 ? nameB : nameA;
+      var absDiff  = Math.abs(diff);
+      var dh = Math.floor(absDiff / 60), dm = absDiff % 60;
+      var diffStr  = dh > 0 ? dh + 'h' + (dm ? ' ' + dm + 'm' : '') : dm + 'm';
+      diffEl.innerHTML =
+        '<span class="time-diff-info">&#9670; <strong>' + ahead + '</strong> is ' +
+        diffStr + ' ahead of <strong>' + behind + '</strong></span>';
+    }
+  }
+}
+
+function updateTimeCities() {
+  var selA = document.getElementById('timeCitySelA');
+  var selB = document.getElementById('timeCitySelB');
+  if (selA) _timeCityAIdx = parseInt(selA.value) || 0;
+  if (selB) _timeCityBIdx = parseInt(selB.value) || 0;
+  _timeTabTick();
+}
+
+function openTime() {
+  activeView = 'time';
+  activeBand = null;
+  activeSub  = null;
+  document.querySelectorAll('.band-btn').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.band === 'time');
+  });
+  $('#subPanel').classList.remove('open');
+  var d = $('#detailInner');
+  d.style.display = 'block';
+  $('#emptyState').style.display = 'none';
+  $('#detailPanel').classList.add('open');
+
+  var accentClr   = '#33ddcc';
+  var cityOptions = TIME_CITIES.map(function(c, i) {
+    return '<option value="' + i + '">' + c.name + '</option>';
+  }).join('');
+
+  d.innerHTML =
+    '<div class="accent-bar" style="background:' + tc(accentClr) + '"></div>' +
+    '<div class="detail-title" style="color:' + tc(accentClr) + '">World Time</div>' +
+    '<div class="detail-subtitle">UTC clock &middot; city comparison &middot; daylight saving status</div>' +
+
+    '<div class="time-section">' +
+      '<div class="time-section-label" style="color:' + tc(accentClr) + '">Coordinated Universal Time</div>' +
+      '<div class="time-utc-box">' +
+        '<div id="timePanelUtc" class="time-utc-clock">--:--:--</div>' +
+        '<div class="time-utc-label">UTC</div>' +
+        '<div id="timePanelDate" class="time-utc-date">&mdash;</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="time-section">' +
+      '<div class="time-section-label" style="color:' + tc(accentClr) + '">City Time Comparison</div>' +
+      '<div class="time-compare-grid">' +
+        '<div class="time-city-card">' +
+          '<select id="timeCitySelA" class="time-select" onchange="updateTimeCities()">' +
+            cityOptions +
+          '</select>' +
+          '<div id="timeCityCardA"></div>' +
+        '</div>' +
+        '<div class="time-city-card">' +
+          '<select id="timeCitySelB" class="time-select" onchange="updateTimeCities()">' +
+            cityOptions +
+          '</select>' +
+          '<div id="timeCityCardB"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="timeDiffBar" class="time-diff-bar"></div>' +
+    '</div>';
+
+  /* restore previously selected cities */
+  var selA = document.getElementById('timeCitySelA');
+  var selB = document.getElementById('timeCitySelB');
+  if (selA) selA.value = String(_timeCityAIdx);
+  if (selB) selB.value = String(_timeCityBIdx);
+
+  /* start live-tick */
+  clearInterval(_timeTabInterval);
+  _timeTabTick();
+  _timeTabInterval = setInterval(_timeTabTick, 1000);
 }
 
 function switchCalcTab(btn, id) {
@@ -4736,7 +5080,8 @@ document.addEventListener('keydown', e => {
     { type:'broadcast' },
     { type:'calc' },
     { type:'search' },
-    { type:'antennas' }
+    { type:'antennas' },
+    { type:'time' }
   ];
 
   /* find current tab index */
@@ -4747,6 +5092,7 @@ document.addEventListener('keydown', e => {
   else if (activeView === 'calc')        curIdx = BANDS.length + 3;
   else if (activeView === 'search')      curIdx = BANDS.length + 4;
   else if (activeView === 'antennas')    curIdx = BANDS.length + 5;
+  else if (activeView === 'time')        curIdx = BANDS.length + 6;
   else if (activeView === 'band')        curIdx = BANDS.findIndex(b => b.id === activeBand);
 
   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
@@ -4806,6 +5152,7 @@ document.addEventListener('keydown', e => {
     else if (tab.type === 'calc')        openCalc();
     else if (tab.type === 'search')      openSearch('');
     else if (tab.type === 'antennas')    openAntennas();
+    else if (tab.type === 'time')        openTime();
     else                                 selectBand(tab.data);
   }
 
