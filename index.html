@@ -5289,11 +5289,21 @@ document.addEventListener('keydown', e => {
   else if (activeView === 'time')        curIdx = BANDS.length + 6;
   else if (activeView === 'band')        curIdx = BANDS.findIndex(b => b.id === activeBand);
 
-  const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
+   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
    if (!isArrow) return;
 
-   /* do not hijack arrow keys while the user is typing / using a select */
-   if (inInput && !contentFocused) return;
+   /* do not hijack arrow keys while the user is typing / using a native select or
+      a filter/calc input — but allow navigation out of the global search bar */
+   if (inInput && !contentFocused) {
+     const isGlobalSearch = document.activeElement &&
+                            document.activeElement.id === 'globalSearch';
+     if (isGlobalSearch) {
+       /* blur search field so the arrow continues into tab navigation below */
+       document.activeElement.blur();
+     } else {
+       return;
+     }
+   }
 
    /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
   if (contentFocused) {
@@ -5338,10 +5348,11 @@ document.addEventListener('keydown', e => {
     let next;
     if (curIdx < 0) {
       next = e.key === 'ArrowDown' ? 0 : allTabs.length - 1;
-    } else {
-      next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
-      next = Math.max(0, Math.min(next, allTabs.length - 1));
-    }
+     } else {
+       next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
+       /* wrap-around: UP from first → last, DOWN from last → first */
+       next = ((next % allTabs.length) + allTabs.length) % allTabs.length;
+     }
     const tab = allTabs[next];
     if      (tab.type === 'glossary')    openGlossary();
     else if (tab.type === 'propagation') openPropagation();
