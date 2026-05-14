@@ -100,6 +100,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .band-btn[data-band="antennas"] .label{color:#7a4a6a}
 .band-btn[data-band="antennas"].active .label{color:#ff66cc}
 .band-btn[data-band="antennas"]::after{background:#ff66cc}
+.band-btn[data-band="time"] .label{color:#8a3030}
+.band-btn[data-band="time"].active .label{color:#ff4433}
+.band-btn[data-band="time"]::after{background:#ff4433}
 
 @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,255,255,.15)) brightness(1.1)}50%{filter:drop-shadow(0 0 10px rgba(255,255,255,.25)) brightness(1.25)}}
 
@@ -196,17 +199,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .time-city-time{font-size:30px;font-weight:700;letter-spacing:2px;color:#e0e8f0;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:3px}
 .time-city-date{font-size:11px;color:#5a7080;letter-spacing:.3px;margin-bottom:8px}
 .time-city-offset{font-size:12px;color:#44ccff;background:#44ccff0f;border:1px solid #44ccff2a;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block}
-.time-city-tzname{font-size:10px;color:#3a6070;letter-spacing:.3px;margin-bottom:6px;opacity:.85}
-.time-city-dst{font-size:12px;margin-bottom:4px;line-height:1.4}
+.time-city-tzname{font-size:12px;color:#ffaa44;background:#ffaa440d;border:1px solid #ffaa4428;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block;letter-spacing:.3px}
+.time-city-dst{font-size:13px;margin-bottom:4px;line-height:1.4}
 .time-dst-on{color:#33ff88}.time-dst-off{color:#9aaabe}.time-dst-none{color:#3a5060}
-.time-city-dst-row{font-size:11px;color:#3a5060;margin-bottom:4px;line-height:1.5}
+.time-city-dst-row{font-size:12px;color:#3a5060;margin-bottom:4px;line-height:1.5}
 .time-diff-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:10px 14px;font-size:13px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center}
 .time-diff-eq{color:#3a5060}.time-diff-info{color:#c0ccd8}.time-diff-info strong{color:#e0e8f0}
 html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar,html.light .time-sync-bar{background:#f0f4f8;border-color:#c8cdd8}
 html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
 html.light .time-utc-clock{color:#009987}
 html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
-html.light .time-city-tzname{color:#8a9aae}
+html.light .time-city-tzname{color:#bb6600}
 html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
 html.light .time-section-label{border-color:#c8cdd8}
 html.light .time-diff-info strong{color:#1e2840}
@@ -483,6 +486,9 @@ html.light .band-btn[data-band="search"]::after{background:#117711}
 html.light .band-btn[data-band="antennas"] .label{color:#993377}
 html.light .band-btn[data-band="antennas"].active .label{color:#993377}
 html.light .band-btn[data-band="antennas"]::after{background:#993377}
+html.light .band-btn[data-band="time"] .label{color:#cc2211}
+html.light .band-btn[data-band="time"].active .label{color:#aa1100}
+html.light .band-btn[data-band="time"]::after{background:#cc2211}
 
 html.light .band-sep{background:linear-gradient(90deg,transparent,#c8cdd8,transparent)}
 
