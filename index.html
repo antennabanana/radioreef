@@ -2951,6 +2951,7 @@ function refreshCurrentView(){
   else if(activeView === 'calc') openCalc();
   else if(activeView === 'search') openSearch(lastSearchQuery);
   else if(activeView === 'antennas') openAntennas();
+  else if(activeView === 'time') openTime();
   else if(activeView === 'band' && activeBand){
     var band = BANDS.find(function(b){ return b.id === activeBand; });
     if(band && activeSub){
