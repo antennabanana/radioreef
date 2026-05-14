@@ -5430,7 +5430,7 @@ document.addEventListener('click', e => {
 
 /* ── UTC clock ────────────────────────────────────────────── */
 function updateClock() {
-  const now = new Date();
+  const now = new Date(Date.now() + _timeOffset);
   const h = String(now.getUTCHours()).padStart(2,'0');
   const m = String(now.getUTCMinutes()).padStart(2,'0');
   const s = String(now.getUTCSeconds()).padStart(2,'0');
