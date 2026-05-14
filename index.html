@@ -100,6 +100,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .band-btn[data-band="antennas"] .label{color:#7a4a6a}
 .band-btn[data-band="antennas"].active .label{color:#ff66cc}
 .band-btn[data-band="antennas"]::after{background:#ff66cc}
+.band-btn[data-band="time"] .label{color:#8a3030}
+.band-btn[data-band="time"].active .label{color:#ff4433}
+.band-btn[data-band="time"]::after{background:#ff4433}
 
 @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,255,255,.15)) brightness(1.1)}50%{filter:drop-shadow(0 0 10px rgba(255,255,255,.25)) brightness(1.25)}}
 
@@ -181,6 +184,48 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ant-svg-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
 .ant-svg-label{font-size:10px;color:#5a7080;letter-spacing:.5px;text-align:center}
 .ant-svg-note{font-size:9px;color:#3a5060;line-height:1.4;text-align:center;padding:0 4px}
+
+/* ── time panel ──────────────────────────────────────────────── */
+.time-section{margin-bottom:20px}
+.time-section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #1e2840}
+.time-utc-box{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:22px;text-align:center}
+.time-utc-clock{font-size:52px;font-weight:700;letter-spacing:6px;color:#33ddcc;font-variant-numeric:tabular-nums;line-height:1}
+.time-utc-label{font-size:10px;color:#3a5060;letter-spacing:3px;text-transform:uppercase;margin-top:5px}
+.time-utc-date{font-size:13px;color:#5a7080;letter-spacing:.5px;margin-top:8px}
+.time-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.time-city-card{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:12px}
+.time-select{width:100%;background:#0d1220;border:1px solid #1e2840;border-radius:2px;color:#c0ccd8;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;margin-bottom:10px;cursor:pointer}
+.time-select:focus{outline:none;border-color:#33ddcc}
+.time-city-time{font-size:30px;font-weight:700;letter-spacing:2px;color:#e0e8f0;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:3px}
+.time-city-date{font-size:11px;color:#5a7080;letter-spacing:.3px;margin-bottom:8px}
+.time-city-offset{font-size:12px;color:#44ccff;background:#44ccff0f;border:1px solid #44ccff2a;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block}
+.time-city-tzname{font-size:12px;color:#ffaa44;background:#ffaa440d;border:1px solid #ffaa4428;border-radius:2px;padding:3px 7px;margin-bottom:7px;display:inline-block;letter-spacing:.3px}
+.time-city-dst{font-size:13px;margin-bottom:4px;line-height:1.4}
+.time-dst-on{color:#33ff88}.time-dst-off{color:#9aaabe}.time-dst-none{color:#3a5060}
+.time-city-dst-row{font-size:12px;color:#3a5060;margin-bottom:4px;line-height:1.5}
+.time-diff-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:10px 14px;font-size:13px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center}
+.time-diff-eq{color:#3a5060}.time-diff-info{color:#c0ccd8}.time-diff-info strong{color:#e0e8f0}
+html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar,html.light .time-sync-bar{background:#f0f4f8;border-color:#c8cdd8}
+html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
+html.light .time-utc-clock{color:#009987}
+html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
+html.light .time-city-time{color:#2a3040}
+html.light .time-city-offset{color:#1155cc;background:#1155cc0e;border-color:#1155cc30}
+html.light .time-city-tzname{color:#bb6600;background:#cc77000e;border-color:#cc770028}
+html.light .time-dst-on{color:#00884a}
+html.light .time-dst-off{color:#5a6878}
+html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
+html.light .time-diff-eq{color:#7a8a9a}
+html.light .time-diff-info{color:#3a4558}
+html.light .time-section-label{border-color:#c8cdd8}
+html.light .time-diff-info strong{color:#1e2840}
+html.light .time-city-filter{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
+html.light .time-city-filter::placeholder{color:#8a9aae}
+.time-sync-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:6px 12px;font-size:11px;margin-top:8px;min-height:26px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;letter-spacing:.3px}
+.time-city-filter{width:100%;background:#0d1220;border:1px solid #1e2840;border-radius:2px;color:#c0ccd8;font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 8px;margin-bottom:5px;box-sizing:border-box}
+.time-city-filter:focus{outline:none;border-color:#33ddcc}
+.time-city-filter::placeholder{color:#3a5060}
+@media(max-width:600px){.time-compare-grid{grid-template-columns:1fr}}
 .ant-desc{font-size:14px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
 .ant-props{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:10px}
 .ant-pro,.ant-con{font-size:13px;line-height:1.5;padding-left:14px;position:relative}
@@ -447,6 +492,9 @@ html.light .band-btn[data-band="search"]::after{background:#117711}
 html.light .band-btn[data-band="antennas"] .label{color:#993377}
 html.light .band-btn[data-band="antennas"].active .label{color:#993377}
 html.light .band-btn[data-band="antennas"]::after{background:#993377}
+html.light .band-btn[data-band="time"] .label{color:#cc2211}
+html.light .band-btn[data-band="time"].active .label{color:#aa1100}
+html.light .band-btn[data-band="time"]::after{background:#cc2211}
 
 html.light .band-sep{background:linear-gradient(90deg,transparent,#c8cdd8,transparent)}
 
@@ -2875,6 +2923,13 @@ let activeBand = null;      /* band id string | null */
 let activeSub  = null;      /* sub-band name string | null */
 let contentFocused = false; /* true while Right-arrow scrolls #detailInner */
 let lastSearchQuery = '';
+let _timeTabInterval = null;
+let _timeCityAIdx    = -1;   /* set in openTime() via findIndex */
+let _timeCityBIdx    = -1;   /* set in openTime() via findIndex */
+let _timeOffset      = 0;    /* ms correction from HTTP time-sync */
+let _timeSyncSrc     = null; /* name of source that succeeded */
+let _timeSyncOk      = false;
+let _timeSyncTs      = null; /* Date of last sync */
 
 const $ = s => document.querySelector(s);
 
@@ -2883,7 +2938,8 @@ const LIGHT_COLORS = {
   '#ff4444':'#cc2222','#ff8833':'#cc6600','#ffc833':'#aa8800',
   '#aaff33':'#669900','#33ff88':'#00884a','#33aaff':'#0077cc',
   '#aa66ff':'#7744cc','#88ccff':'#2277cc','#ffaa44':'#cc7700',
-  '#ff8844':'#cc5500','#44ccff':'#1155cc','#88ff66':'#117711'
+  '#ff8844':'#cc5500','#44ccff':'#1155cc','#88ff66':'#117711',
+  '#33ddcc':'#009987','#5a7080':'#5a6878','#3a5060':'#7a8a9a'
 };
 function isLight(){ return document.documentElement.classList.contains('light'); }
 function tc(c){ return isLight() ? (LIGHT_COLORS[c]||c) : c; }
@@ -2901,6 +2957,7 @@ function refreshCurrentView(){
   else if(activeView === 'calc') openCalc();
   else if(activeView === 'search') openSearch(lastSearchQuery);
   else if(activeView === 'antennas') openAntennas();
+  else if(activeView === 'time') openTime();
   else if(activeView === 'band' && activeBand){
     var band = BANDS.find(function(b){ return b.id === activeBand; });
     if(band && activeSub){
@@ -2931,7 +2988,7 @@ function showIntro(){
      '<div class="intro-line"><span class="key">←</span> back to band from any sub‑band</div>'+
      '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode · <span class="key">Esc</span> home</div>'+
      '<div class="intro-sep"></div>'+
-     '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas)</div>';
+     '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas), <strong>TIME</strong> (world clock)</div>';
 }
 
 /* ── count total sub-bands ───────────────────────────────── */
@@ -3022,6 +3079,16 @@ BANDS.forEach(b => {
   el.dataset.band = 'antennas';
   el.innerHTML = '<span class="label">ANT</span><span class="freq">Antennas</span>';
   el.addEventListener('click', () => openAntennas());
+  bandPanel.appendChild(el);
+})();
+
+/* time button */
+(function(){
+  const el = document.createElement('div');
+  el.className = 'band-btn';
+  el.dataset.band = 'time';
+  el.innerHTML = '<span class="label">TIME</span><span class="freq">World Clock</span>';
+  el.addEventListener('click', () => openTime());
   bandPanel.appendChild(el);
 })();
 
@@ -3237,6 +3304,8 @@ function openPropagation() {
    ══════════════════════════════════════════════════════════════ */
 function goHome() {
   blurContent();
+  clearInterval(_timeTabInterval);
+  _timeTabInterval = null;
   activeView = 'intro';
   activeBand = null;
   activeSub  = null;
@@ -3801,6 +3870,695 @@ function openAntennas() {
 
   d.innerHTML = html;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TIME PANEL — World clock & city comparison
+   ══════════════════════════════════════════════════════════════ */
+ var TIME_CITIES = [
+   /* ── UTC-12 ─────────────────────────────────────────────── */
+   {display:'(UTC-12:00) International Date Line West',
+    tz:'Etc/GMT+12',                     tzname:'Dateline Standard Time',
+    short:'Dateline',    search:['dateline','international date line','GMT-12','UTC-12']},
+   /* ── UTC-11 ─────────────────────────────────────────────── */
+   {display:'(UTC-11:00) Coordinated Universal Time-11',
+    tz:'Pacific/Pago_Pago',              tzname:'UTC-11',
+    short:'UTC-11',      search:['UTC-11','Pago Pago','Samoa','American Samoa','Niue']},
+   /* ── UTC-10 ─────────────────────────────────────────────── */
+   {display:'(UTC-10:00) Hawaii',
+    tz:'Pacific/Honolulu',               tzname:'Hawaiian Standard Time',
+    short:'Hawaii',      search:['Hawaii','Honolulu','HST','Hawaiian','Cook Islands','French Polynesia']},
+   /* ── UTC-09 ─────────────────────────────────────────────── */
+   {display:'(UTC-09:00) Alaska',
+    tz:'America/Anchorage',              tzname:'Alaskan Standard Time',
+    short:'Alaska',      search:['Alaska','Anchorage','AKST','Alaskan']},
+   /* ── UTC-08 ─────────────────────────────────────────────── */
+   {display:'(UTC-08:00) Pacific Time (US & Canada)',
+    tz:'America/Los_Angeles',            tzname:'Pacific Standard Time',
+    short:'Pacific Time', search:['Pacific','Los Angeles','Vancouver','Seattle','Portland','PST','PDT']},
+   /* ── UTC-07 ─────────────────────────────────────────────── */
+   {display:'(UTC-07:00) Mountain Time (US & Canada)',
+    tz:'America/Denver',                 tzname:'Mountain Standard Time',
+    short:'Mountain Time', search:['Mountain','Denver','Salt Lake City','MST','MDT']},
+   {display:'(UTC-07:00) Arizona',
+    tz:'America/Phoenix',                tzname:'US Mountain Standard Time',
+    short:'Arizona',     search:['Arizona','Phoenix','US Mountain']},
+   /* ── UTC-06 ─────────────────────────────────────────────── */
+   {display:'(UTC-06:00) Central Time (US & Canada)',
+    tz:'America/Chicago',                tzname:'Central Standard Time',
+    short:'Central Time', search:['Central','Chicago','Dallas','Houston','Winnipeg','CST','CDT']},
+   {display:'(UTC-06:00) Guadalajara, Mexico City, Monterrey',
+    tz:'America/Mexico_City',            tzname:'Central Standard Time (Mexico)',
+    short:'Mexico City', search:['Mexico City','Guadalajara','Monterrey','Mexico']},
+   {display:'(UTC-06:00) Central America',
+    tz:'America/Guatemala',              tzname:'Central America Standard Time',
+    short:'Central America', search:['Central America','Guatemala','Belize','El Salvador','Honduras','Nicaragua','Costa Rica']},
+   {display:'(UTC-06:00) Saskatchewan',
+    tz:'America/Regina',                 tzname:'Canada Central Standard Time',
+    short:'Saskatchewan', search:['Saskatchewan','Regina','Canada Central']},
+   /* ── UTC-05 ─────────────────────────────────────────────── */
+   {display:'(UTC-05:00) Eastern Time (US & Canada)',
+    tz:'America/New_York',               tzname:'Eastern Standard Time',
+    short:'Eastern Time', search:['Eastern','New York','Toronto','Boston','Miami','Atlanta','EST','EDT']},
+   {display:'(UTC-05:00) Bogota, Lima, Quito, Rio Branco',
+    tz:'America/Bogota',                 tzname:'SA Pacific Standard Time',
+    short:'Bogota',      search:['Bogota','Lima','Quito','Rio Branco','Colombia','Peru','Ecuador','SA Pacific']},
+   {display:'(UTC-05:00) Havana',
+    tz:'America/Havana',                 tzname:'Cuba Standard Time',
+    short:'Havana',      search:['Havana','Cuba','CST']},
+   /* ── UTC-04:30 ───────────────────────────────────────────── */
+   {display:'(UTC-04:30) Caracas',
+    tz:'America/Caracas',                tzname:'Venezuela Standard Time',
+    short:'Caracas',     search:['Caracas','Venezuela','VET']},
+   /* ── UTC-04 ─────────────────────────────────────────────── */
+   {display:'(UTC-04:00) Atlantic Time (Canada)',
+    tz:'America/Halifax',                tzname:'Atlantic Standard Time',
+    short:'Halifax',     search:['Atlantic','Halifax','Nova Scotia','Bermuda','AST','ADT']},
+   {display:'(UTC-04:00) Georgetown, La Paz, Manaus, San Juan',
+    tz:'America/La_Paz',                 tzname:'SA Western Standard Time',
+    short:'La Paz',      search:['Georgetown','La Paz','Manaus','San Juan','Bolivia','Guyana','Puerto Rico','SA Western']},
+   {display:'(UTC-04:00) Asuncion',
+    tz:'America/Asuncion',               tzname:'Paraguay Standard Time',
+    short:'Asuncion',    search:['Asuncion','Paraguay','PYT']},
+   /* ── UTC-03:30 ───────────────────────────────────────────── */
+   {display:'(UTC-03:30) Newfoundland',
+    tz:'America/St_Johns',               tzname:'Newfoundland Standard Time',
+    short:'Newfoundland', search:['Newfoundland','St. Johns','NST','NDT']},
+   /* ── UTC-03 ─────────────────────────────────────────────── */
+   {display:'(UTC-03:00) Brasilia',
+    tz:'America/Sao_Paulo',              tzname:'E. South America Standard Time',
+    short:'Brasilia',    search:['Brasilia','Sao Paulo','São Paulo','Brazil','BRT','E. South America']},
+   {display:'(UTC-03:00) City of Buenos Aires',
+    tz:'America/Argentina/Buenos_Aires', tzname:'Argentina Standard Time',
+    short:'Buenos Aires', search:['Buenos Aires','Argentina','ART']},
+   {display:'(UTC-03:00) Cayenne, Fortaleza',
+    tz:'America/Cayenne',                tzname:'SA Eastern Standard Time',
+    short:'Cayenne',     search:['Cayenne','Fortaleza','French Guiana','Suriname','SA Eastern']},
+   {display:'(UTC-03:00) Greenland',
+    tz:'America/Godthab',                tzname:'Greenland Standard Time',
+    short:'Greenland',   search:['Greenland','Nuuk','WGT']},
+   {display:'(UTC-03:00) Montevideo',
+    tz:'America/Montevideo',             tzname:'Montevideo Standard Time',
+    short:'Montevideo',  search:['Montevideo','Uruguay','UYT']},
+   {display:'(UTC-03:00) Santiago',
+    tz:'America/Santiago',               tzname:'Pacific SA Standard Time',
+    short:'Santiago',    search:['Santiago','Chile','CLT','Pacific SA']},
+   /* ── UTC-02 ─────────────────────────────────────────────── */
+   {display:'(UTC-02:00) Coordinated Universal Time-02',
+    tz:'Etc/GMT+2',                      tzname:'UTC-02',
+    short:'UTC-02',      search:['UTC-02','South Georgia']},
+   /* ── UTC-01 ─────────────────────────────────────────────── */
+   {display:'(UTC-01:00) Cabo Verde Is.',
+    tz:'Atlantic/Cape_Verde',            tzname:'Cape Verde Standard Time',
+    short:'Cabo Verde',  search:['Cabo Verde','Cape Verde','CVT']},
+   /* ── UTC ────────────────────────────────────────────────── */
+   {display:'(UTC) Coordinated Universal Time',
+    tz:'UTC',                            tzname:'UTC',
+    short:'UTC',         search:['UTC','Universal','Coordinated Universal Time']},
+   {display:'(UTC) Dublin, Edinburgh, Lisbon, London',
+    tz:'Europe/London',                  tzname:'GMT Standard Time',
+    short:'London',      search:['London','Dublin','Edinburgh','Lisbon','UK','Ireland','England','Wales','GMT','BST','WET','GMT Standard']},
+   {display:'(UTC) Monrovia, Reykjavik',
+    tz:'Atlantic/Reykjavik',             tzname:'Greenwich Standard Time',
+    short:'Reykjavik',   search:['Reykjavik','Monrovia','Iceland','Liberia','Ghana','Greenwich Standard']},
+   {display:'(UTC) Casablanca',
+    tz:'Africa/Casablanca',              tzname:'Morocco Standard Time',
+    short:'Casablanca',  search:['Casablanca','Morocco','Rabat','Morocco Standard']},
+   /* ── UTC+01 ─────────────────────────────────────────────── */
+   {display:'(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna',
+    tz:'Europe/Berlin',                  tzname:'W. Europe Standard Time',
+    short:'Berlin',      search:['Berlin','Amsterdam','Bern','Rome','Stockholm','Vienna','Germany','Switzerland','Netherlands','Italy','Sweden','Austria','CET','W. Europe']},
+   {display:'(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague',
+    tz:'Europe/Budapest',                tzname:'Central Europe Standard Time',
+    short:'Budapest',    search:['Belgrade','Bratislava','Budapest','Ljubljana','Prague','Serbia','Slovakia','Hungary','Slovenia','Czech Republic','Central Europe Standard']},
+   {display:'(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb',
+    tz:'Europe/Warsaw',                  tzname:'Central European Standard Time',
+    short:'Warsaw',      search:['Sarajevo','Skopje','Warsaw','Zagreb','Poland','Bosnia','Macedonia','Croatia','Central European Standard']},
+   {display:'(UTC+01:00) Brussels, Copenhagen, Madrid, Paris',
+    tz:'Europe/Paris',                   tzname:'Romance Standard Time',
+    short:'Paris',       search:['Paris','Brussels','Copenhagen','Madrid','France','Belgium','Denmark','Spain','Romance Standard']},
+   {display:'(UTC+01:00) West Central Africa',
+    tz:'Africa/Lagos',                   tzname:'W. Central Africa Standard Time',
+    short:'Lagos',       search:['Lagos','Nigeria','West Africa','WAT','W. Central Africa']},
+   {display:'(UTC+01:00) Windhoek',
+    tz:'Africa/Windhoek',                tzname:'Namibia Standard Time',
+    short:'Windhoek',    search:['Windhoek','Namibia','WAT']},
+   /* ── UTC+02 ─────────────────────────────────────────────── */
+   {display:'(UTC+02:00) Athens, Bucharest',
+    tz:'Europe/Athens',                  tzname:'GTB Standard Time',
+    short:'Athens',      search:['Athens','Bucharest','Greece','Romania','EET','GTB']},
+   {display:'(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius',
+    tz:'Europe/Helsinki',                tzname:'FLE Standard Time',
+    short:'Helsinki',    search:['Helsinki','Kyiv','Kiev','Riga','Sofia','Tallinn','Vilnius','Finland','Ukraine','Latvia','Bulgaria','Estonia','Lithuania','EET','FLE']},
+   {display:'(UTC+02:00) Cairo',
+    tz:'Africa/Cairo',                   tzname:'Egypt Standard Time',
+    short:'Cairo',       search:['Cairo','Egypt','EET']},
+   {display:'(UTC+02:00) Jerusalem',
+    tz:'Asia/Jerusalem',                 tzname:'Israel Standard Time',
+    short:'Jerusalem',   search:['Jerusalem','Israel','IST','Tel Aviv','Israel Standard']},
+   {display:'(UTC+02:00) Harare, Pretoria',
+    tz:'Africa/Johannesburg',            tzname:'South Africa Standard Time',
+    short:'Johannesburg', search:['Harare','Pretoria','Johannesburg','Cape Town','South Africa','Zimbabwe','SAST','CAT','South Africa Standard']},
+   {display:'(UTC+02:00) Amman',
+    tz:'Asia/Amman',                     tzname:'Jordan Standard Time',
+    short:'Amman',       search:['Amman','Jordan','EEST']},
+   {display:'(UTC+02:00) Beirut',
+    tz:'Asia/Beirut',                    tzname:'Middle East Standard Time',
+    short:'Beirut',      search:['Beirut','Lebanon','EEST','Middle East Standard']},
+   {display:'(UTC+02:00) Damascus',
+    tz:'Asia/Damascus',                  tzname:'Syria Standard Time',
+    short:'Damascus',    search:['Damascus','Syria','EEST']},
+   {display:'(UTC+02:00) Istanbul',
+    tz:'Europe/Istanbul',                tzname:'Turkey Standard Time',
+    short:'Istanbul',    search:['Istanbul','Turkey','Ankara','TRT','Türkiye','Turkey Standard']},
+   /* ── UTC+03 ─────────────────────────────────────────────── */
+   {display:'(UTC+03:00) Baghdad',
+    tz:'Asia/Baghdad',                   tzname:'Arabic Standard Time',
+    short:'Baghdad',     search:['Baghdad','Iraq','AST','Arabic Standard']},
+   {display:'(UTC+03:00) Kuwait, Riyadh',
+    tz:'Asia/Riyadh',                    tzname:'Arab Standard Time',
+    short:'Riyadh',      search:['Riyadh','Kuwait','Saudi Arabia','Qatar','Yemen','Bahrain','AST','Arab Standard']},
+   {display:'(UTC+03:00) Moscow, St. Petersburg, Volgograd (RTZ 2)',
+    tz:'Europe/Moscow',                  tzname:'Russian Standard Time',
+    short:'Moscow',      search:['Moscow','St. Petersburg','Saint Petersburg','Volgograd','Russia','MSK','Russian Standard']},
+   {display:'(UTC+03:00) Nairobi',
+    tz:'Africa/Nairobi',                 tzname:'E. Africa Standard Time',
+    short:'Nairobi',     search:['Nairobi','Kenya','Tanzania','Uganda','Ethiopia','Somalia','EAT','E. Africa']},
+   {display:'(UTC+03:00) Minsk',
+    tz:'Europe/Minsk',                   tzname:'Belarus Standard Time',
+    short:'Minsk',       search:['Minsk','Belarus','FET']},
+   /* ── UTC+03:30 ───────────────────────────────────────────── */
+   {display:'(UTC+03:30) Tehran',
+    tz:'Asia/Tehran',                    tzname:'Iran Standard Time',
+    short:'Tehran',      search:['Tehran','Iran','IRST','IRDT']},
+   /* ── UTC+04 ─────────────────────────────────────────────── */
+   {display:'(UTC+04:00) Abu Dhabi, Muscat',
+    tz:'Asia/Dubai',                     tzname:'Arabian Standard Time',
+    short:'Dubai',       search:['Dubai','Abu Dhabi','Muscat','UAE','Oman','GST','Arabian Standard']},
+   {display:'(UTC+04:00) Baku',
+    tz:'Asia/Baku',                      tzname:'Azerbaijan Standard Time',
+    short:'Baku',        search:['Baku','Azerbaijan','AZT']},
+   {display:'(UTC+04:00) Yerevan',
+    tz:'Asia/Yerevan',                   tzname:'Caucasus Standard Time',
+    short:'Yerevan',     search:['Yerevan','Armenia','AMT','Caucasus Standard']},
+   {display:'(UTC+04:00) Port Louis',
+    tz:'Indian/Mauritius',               tzname:'Mauritius Standard Time',
+    short:'Port Louis',  search:['Port Louis','Mauritius','Reunion','MUT']},
+   {display:'(UTC+04:00) Tbilisi',
+    tz:'Asia/Tbilisi',                   tzname:'Georgian Standard Time',
+    short:'Tbilisi',     search:['Tbilisi','Georgia','GET']},
+   /* ── UTC+04:30 ───────────────────────────────────────────── */
+   {display:'(UTC+04:30) Kabul',
+    tz:'Asia/Kabul',                     tzname:'Afghanistan Standard Time',
+    short:'Kabul',       search:['Kabul','Afghanistan','AFT']},
+   /* ── UTC+05 ─────────────────────────────────────────────── */
+   {display:'(UTC+05:00) Islamabad, Karachi',
+    tz:'Asia/Karachi',                   tzname:'Pakistan Standard Time',
+    short:'Karachi',     search:['Karachi','Islamabad','Pakistan','PKT']},
+   {display:'(UTC+05:00) Ashgabat, Tashkent',
+    tz:'Asia/Tashkent',                  tzname:'West Asia Standard Time',
+    short:'Tashkent',    search:['Tashkent','Ashgabat','Uzbekistan','Turkmenistan','UZT','West Asia']},
+   /* ── UTC+05:30 ───────────────────────────────────────────── */
+   {display:'(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi',
+    tz:'Asia/Kolkata',                   tzname:'India Standard Time',
+    short:'Kolkata',     search:['Kolkata','Calcutta','Chennai','Madras','Mumbai','Bombay','New Delhi','India','IST']},
+   {display:'(UTC+05:30) Sri Jayawardenepura',
+    tz:'Asia/Colombo',                   tzname:'Sri Lanka Standard Time',
+    short:'Colombo',     search:['Colombo','Sri Lanka','Sri Jayawardenepura','SLST']},
+   /* ── UTC+05:45 ───────────────────────────────────────────── */
+   {display:'(UTC+05:45) Kathmandu',
+    tz:'Asia/Kathmandu',                 tzname:'Nepal Standard Time',
+    short:'Kathmandu',   search:['Kathmandu','Nepal','NPT']},
+   /* ── UTC+06 ─────────────────────────────────────────────── */
+   {display:'(UTC+06:00) Astana',
+    tz:'Asia/Almaty',                    tzname:'Central Asia Standard Time',
+    short:'Astana',      search:['Astana','Almaty','Kazakhstan','Kyrgyzstan','ALMT','Central Asia']},
+   {display:'(UTC+06:00) Dhaka',
+    tz:'Asia/Dhaka',                     tzname:'Bangladesh Standard Time',
+    short:'Dhaka',       search:['Dhaka','Bangladesh','Bhutan','BST']},
+   /* ── UTC+06:30 ───────────────────────────────────────────── */
+   {display:'(UTC+06:30) Yangon (Rangoon)',
+    tz:'Asia/Yangon',                    tzname:'Myanmar Standard Time',
+    short:'Yangon',      search:['Yangon','Rangoon','Myanmar','Burma','MMT']},
+   /* ── UTC+07 ─────────────────────────────────────────────── */
+   {display:'(UTC+07:00) Bangkok, Hanoi, Jakarta',
+    tz:'Asia/Bangkok',                   tzname:'SE Asia Standard Time',
+    short:'Bangkok',     search:['Bangkok','Hanoi','Jakarta','Thailand','Vietnam','Indonesia','ICT','SE Asia']},
+   /* ── UTC+08 ─────────────────────────────────────────────── */
+   {display:'(UTC+08:00) Beijing, Chongqing, Hong Kong SAR, Urumqi',
+    tz:'Asia/Shanghai',                  tzname:'China Standard Time',
+    short:'Beijing',     search:['Beijing','Shanghai','Chongqing','Hong Kong','Urumqi','China','Macao','CST']},
+   {display:'(UTC+08:00) Kuala Lumpur, Singapore',
+    tz:'Asia/Singapore',                 tzname:'Singapore Standard Time',
+    short:'Singapore',   search:['Singapore','Kuala Lumpur','Malaysia','Philippines','SGT','MYT']},
+   {display:'(UTC+08:00) Taipei',
+    tz:'Asia/Taipei',                    tzname:'Taipei Standard Time',
+    short:'Taipei',      search:['Taipei','Taiwan','CST']},
+   {display:'(UTC+08:00) Perth',
+    tz:'Australia/Perth',                tzname:'W. Australia Standard Time',
+    short:'Perth',       search:['Perth','Australia','AWST','W. Australia']},
+   {display:'(UTC+08:00) Ulaanbaatar',
+    tz:'Asia/Ulaanbaatar',               tzname:'Ulaanbaatar Standard Time',
+    short:'Ulaanbaatar', search:['Ulaanbaatar','Mongolia','ULAT']},
+   /* ── UTC+09 ─────────────────────────────────────────────── */
+   {display:'(UTC+09:00) Osaka, Sapporo, Tokyo',
+    tz:'Asia/Tokyo',                     tzname:'Tokyo Standard Time',
+    short:'Tokyo',       search:['Tokyo','Osaka','Sapporo','Japan','Palau','JST']},
+   {display:'(UTC+09:00) Seoul',
+    tz:'Asia/Seoul',                     tzname:'Korea Standard Time',
+    short:'Seoul',       search:['Seoul','Korea','North Korea','KST']},
+   /* ── UTC+09:30 ───────────────────────────────────────────── */
+   {display:'(UTC+09:30) Adelaide',
+    tz:'Australia/Adelaide',             tzname:'Cen. Australia Standard Time',
+    short:'Adelaide',    search:['Adelaide','Australia','ACST','Cen. Australia']},
+   {display:'(UTC+09:30) Darwin',
+    tz:'Australia/Darwin',               tzname:'AUS Central Standard Time',
+    short:'Darwin',      search:['Darwin','Australia','ACST','AUS Central']},
+   /* ── UTC+10 ─────────────────────────────────────────────── */
+   {display:'(UTC+10:00) Canberra, Melbourne, Sydney',
+    tz:'Australia/Sydney',               tzname:'AUS Eastern Standard Time',
+    short:'Sydney',      search:['Sydney','Melbourne','Canberra','Australia','AEST','AUS Eastern']},
+   {display:'(UTC+10:00) Brisbane',
+    tz:'Australia/Brisbane',             tzname:'E. Australia Standard Time',
+    short:'Brisbane',    search:['Brisbane','Australia','AEST','E. Australia']},
+   {display:'(UTC+10:00) Guam, Port Moresby',
+    tz:'Pacific/Port_Moresby',           tzname:'West Pacific Standard Time',
+    short:'Port Moresby', search:['Guam','Port Moresby','Papua New Guinea','Northern Mariana Islands','Micronesia','ChST','West Pacific']},
+   /* ── UTC+11 ─────────────────────────────────────────────── */
+   {display:'(UTC+11:00) Solomon Is., New Caledonia',
+    tz:'Pacific/Guadalcanal',            tzname:'Central Pacific Standard Time',
+    short:'Honiara',     search:['Solomon Islands','Honiara','New Caledonia','Norfolk Island','SBT','Central Pacific']},
+   /* ── UTC+12 ─────────────────────────────────────────────── */
+   {display:'(UTC+12:00) Auckland, Wellington',
+    tz:'Pacific/Auckland',               tzname:'New Zealand Standard Time',
+    short:'Auckland',    search:['Auckland','Wellington','New Zealand','NZST']},
+   {display:'(UTC+12:00) Fiji',
+    tz:'Pacific/Fiji',                   tzname:'Fiji Standard Time',
+    short:'Fiji',        search:['Fiji','Suva','FJT']},
+   {display:'(UTC+12:00) Coordinated Universal Time+12',
+    tz:'Pacific/Tarawa',                 tzname:'UTC+12',
+    short:'UTC+12',      search:['UTC+12','Kiribati','Marshall Islands','Tuvalu','Nauru','Wallis and Futuna']},
+   /* ── UTC+13 ─────────────────────────────────────────────── */
+   {display:"(UTC+13:00) Nuku'alofa",
+    tz:'Pacific/Tongatapu',              tzname:'Tonga Standard Time',
+    short:"Nuku'alofa",  search:['Tonga','Tongatapu','TOT']},
+   {display:'(UTC+13:00) Samoa',
+    tz:'Pacific/Apia',                   tzname:'Samoa Standard Time',
+    short:'Samoa',       search:['Samoa','Apia','WST']}
+ ];
+ /* _timeCityAIdx / _timeCityBIdx initialised in openTime() via findIndex */
+
+function _timeOffsetMinutes(tz, date) {
+  try {
+    var d = date || new Date();
+    var parts = new Intl.DateTimeFormat('en', {
+      timeZone: tz, timeZoneName: 'shortOffset'
+    }).formatToParts(d);
+    var tzn = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') { tzn = parts[i].value; break; }
+    }
+    if (!tzn || tzn === 'GMT') return 0;
+    var m = tzn.match(/GMT([+-])(\d+)(?::(\d+))?/);
+    if (!m) return 0;
+    return (m[1] === '+' ? 1 : -1) * (parseInt(m[2]) * 60 + parseInt(m[3] || '0'));
+  } catch(e) { return 0; }
+}
+
+function _timeTZAbbr(tz, date) {
+  try {
+    var d = date || new Date();
+    var parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, timeZoneName: 'short'
+    }).formatToParts(d);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'timeZoneName') return parts[i].value;
+    }
+    return '';
+  } catch(e) { return ''; }
+}
+
+function _timeDSTInfo(tz) {
+  try {
+    var year = new Date().getFullYear();
+    var jan  = new Date(year, 0, 15, 12, 0, 0);
+    var jul  = new Date(year, 6, 15, 12, 0, 0);
+    var janOff = _timeOffsetMinutes(tz, jan);
+    var julOff = _timeOffsetMinutes(tz, jul);
+    if (janOff === julOff) {
+      return { hasDST:false, active:false,
+               stdOffset:janOff, dstOffset:janOff,
+               stdAbbr:_timeTZAbbr(tz, jan), dstAbbr:_timeTZAbbr(tz, jan) };
+    }
+    var stdOffset = Math.min(janOff, julOff);
+    var dstOffset = Math.max(janOff, julOff);
+    /* stdDate = a date when standard time is in effect */
+    var stdDate = julOff > janOff ? jan : jul;
+    var dstDate = julOff > janOff ? jul : jan;
+    var curOff  = _timeOffsetMinutes(tz, new Date());
+    return { hasDST:true, active: curOff === dstOffset,
+             stdOffset:stdOffset, dstOffset:dstOffset,
+             stdAbbr:_timeTZAbbr(tz, stdDate),
+             dstAbbr:_timeTZAbbr(tz, dstDate) };
+  } catch(e) {
+    return { hasDST:false, active:false, stdOffset:0, dstOffset:0, stdAbbr:'', dstAbbr:'' };
+  }
+}
+
+function _timeFmtOff(mins) {
+   if (mins === 0) return 'UTC';
+   var sign = mins > 0 ? '+' : '-';
+   var a    = Math.abs(mins);
+   return 'UTC' + sign + String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
+ }
+
+ /* ── HTTP time-sync (browser NTP approximation) ──────────── */
+ var NTP_SOURCES = [
+   { name:'timeapi.io',    url:'https://timeapi.io/api/time/current/zone?timeZone=UTC',
+     parse: function(txt) {
+       var j = JSON.parse(txt); var dt = j.dateTime || j.datetime;
+       if (!dt) return null;
+       if (dt.indexOf('Z') < 0 && dt.indexOf('+') < 0) dt += 'Z';
+       return new Date(dt).getTime();
+     }
+   },
+   { name:'worldtimeapi',  url:'https://worldtimeapi.org/api/timezone/UTC',
+     parse: function(txt) {
+       var j = JSON.parse(txt);
+       if (j.utc_datetime) return new Date(j.utc_datetime).getTime();
+       return j.unixtime ? j.unixtime * 1000 : null;
+     }
+   },
+   { name:'cloudflare',    url:'https://www.cloudflare.com/cdn-cgi/trace',
+     parse: function(txt) {
+       var m = txt.match(/ts=(\d+\.\d+)/);
+       return m ? Math.round(parseFloat(m[1]) * 1000) : null;
+     }
+   },
+   { name:'1.1.1.1',       url:'https://1.1.1.1/cdn-cgi/trace',
+     parse: function(txt) {
+       var m = txt.match(/ts=(\d+\.\d+)/);
+       return m ? Math.round(parseFloat(m[1]) * 1000) : null;
+     }
+   },
+   { name:'akamai',        url:'https://time.akamai.com/?ms',
+     parse: function(txt) { var n = parseFloat(txt.trim()); return isNaN(n) ? null : Math.round(n); }
+   },
+   { name:'jsontest',      url:'https://time.jsontest.com/',
+     parse: function(txt) {
+       var j = JSON.parse(txt);
+       return j.milliseconds_since_epoch ? parseInt(j.milliseconds_since_epoch) : null;
+     }
+   },
+   /* Date-header fallbacks (parse:null → handled separately) */
+   { name:'httpbin',       url:'https://httpbin.org/headers',      parse: null },
+   { name:'github-api',    url:'https://api.github.com/',           parse: null },
+   { name:'cfapi',         url:'https://api.cloudflare.com/client/v4/', parse: null },
+   { name:'googleapis',    url:'https://www.googleapis.com/discovery/v1/apis', parse: null }
+ ];
+
+ function _timeSyncOne(src) {
+   return new Promise(function(resolve, reject) {
+     var t0 = Date.now();
+     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+     var tid = setTimeout(function() { if (controller) controller.abort(); reject(new Error('timeout')); }, 4000);
+     var opts = { cache: 'no-store' };
+     if (controller) opts.signal = controller.signal;
+     fetch(src.url, opts)
+       .then(function(resp) {
+         clearTimeout(tid);
+         var t1 = Date.now();
+         if (src.parse) {
+           return resp.text().then(function(txt) {
+             var serverMs = src.parse(txt);
+             if (serverMs === null || isNaN(serverMs)) throw new Error('parse fail');
+             var rtt = t1 - t0;
+             resolve({ name: src.name, offset: Math.round(serverMs - t1 + rtt / 2) });
+           });
+         } else {
+           var dateHdr = resp.headers.get('Date');
+           if (!dateHdr) { reject(new Error('no Date header')); return; }
+           var serverMs2 = new Date(dateHdr).getTime();
+           var rtt2 = t1 - t0;
+           resolve({ name: src.name, offset: Math.round(serverMs2 - t1 + rtt2 / 2) });
+         }
+       })
+       .catch(function(err) { clearTimeout(tid); reject(err); });
+   });
+ }
+
+ function _timeSyncFromList() {
+   var i = 0;
+   function tryNext() {
+     if (i >= NTP_SOURCES.length) {
+       _updateTimeSyncUI();   /* all failed — show pending */
+       return;
+     }
+     var src = NTP_SOURCES[i++];
+     _timeSyncOne(src).then(function(result) {
+       _timeOffset  = result.offset;
+       _timeSyncSrc = result.name;
+       _timeSyncOk  = true;
+       _timeSyncTs  = new Date();
+       _updateTimeSyncUI();
+     }).catch(function() { tryNext(); });
+   }
+   tryNext();
+ }
+
+ function _updateTimeSyncUI() {
+   var el = document.getElementById('timeSyncStatus');
+   if (!el) return;
+   if (!_timeSyncOk) {
+      el.innerHTML = '<span style="color:' + tc('#3a5060') + '">&#9675; Time sync pending&hellip;</span>';
+     return;
+   }
+   var offStr = _timeOffset >= 0 ? '+' + _timeOffset : String(_timeOffset);
+   var tsStr  = _timeSyncTs
+     ? (String(_timeSyncTs.getUTCHours()).padStart(2,'0') + ':' +
+        String(_timeSyncTs.getUTCMinutes()).padStart(2,'0') + 'Z')
+     : '';
+   var c = '#33ddcc';
+   el.innerHTML =
+     '<span style="color:' + tc(c) + '">&#9679; Synced via ' + _timeSyncSrc + '</span>' +
+      '<span style="color:' + tc('#5a7080') + ';margin-left:10px">offset ' + offStr + '&thinsp;ms</span>' +
+      (tsStr ? '<span style="color:' + tc('#3a5060') + ';margin-left:10px">at ' + tsStr + '</span>' : '');
+ }
+
+function _timeRenderCard(elId, cityIdx, now) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  var city = TIME_CITIES[cityIdx];
+  if (!city) return;
+  try {
+    var timeStr = now.toLocaleTimeString('en-GB', {
+      timeZone: city.tz, hour12: false,
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    var dateStr = now.toLocaleDateString('en-GB', {
+      timeZone: city.tz, weekday: 'short',
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+    var curOff = _timeOffsetMinutes(city.tz, now);
+    var abbr   = _timeTZAbbr(city.tz, now);
+    var dst    = _timeDSTInfo(city.tz);
+    /* don't repeat numeric offsets like "GMT+8" — only show named abbreviations */
+    var abbrExtra = (abbr && abbr.indexOf('GMT') === -1)
+      ? ' &nbsp;&#183;&nbsp; ' + abbr : '';
+    var html =
+      '<div class="time-city-time">' + timeStr + '</div>' +
+      '<div class="time-city-date">' + dateStr + '</div>' +
+      '<div class="time-city-offset">' + _timeFmtOff(curOff) + abbrExtra + '</div>' +
+      '<div class="time-city-tzname">' + city.tzname + '</div>';
+    if (dst.hasDST) {
+      if (dst.active) {
+        html += '<div class="time-city-dst time-dst-on">&#9728; Daylight saving time active</div>';
+      } else {
+        html += '<div class="time-city-dst time-dst-off">&#9790; Standard time &mdash; DST not active</div>';
+      }
+      html +=
+        '<div class="time-city-dst-row">' +
+          'Standard: ' + dst.stdAbbr + ' &nbsp;' + _timeFmtOff(dst.stdOffset) +
+          ' &nbsp;&#183;&nbsp; DST: ' + dst.dstAbbr + ' &nbsp;' + _timeFmtOff(dst.dstOffset) +
+        '</div>';
+    } else {
+      html += '<div class="time-city-dst time-dst-none">&#8212; No daylight saving time</div>';
+    }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="time-city-time">--:--:--</div>'; }
+}
+
+function _timeTabTick() {
+   if (activeView !== 'time') {
+     clearInterval(_timeTabInterval);
+     _timeTabInterval = null;
+     return;
+   }
+   var now = new Date(Date.now() + _timeOffset);
+   /* UTC clock */
+   var utcEl  = document.getElementById('timePanelUtc');
+   var dateEl = document.getElementById('timePanelDate');
+   if (utcEl) {
+     utcEl.textContent =
+       String(now.getUTCHours()).padStart(2, '0') + ':' +
+       String(now.getUTCMinutes()).padStart(2, '0') + ':' +
+       String(now.getUTCSeconds()).padStart(2, '0');
+   }
+   if (dateEl) {
+     dateEl.textContent = now.toLocaleDateString('en-GB', {
+       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+     });
+   }
+   /* city cards */
+   _timeRenderCard('timeCityCardA', _timeCityAIdx, now);
+   _timeRenderCard('timeCityCardB', _timeCityBIdx, now);
+   /* diff bar */
+   var diffEl = document.getElementById('timeDiffBar');
+   if (diffEl && _timeCityAIdx >= 0 && _timeCityBIdx >= 0) {
+     var offA = _timeOffsetMinutes(TIME_CITIES[_timeCityAIdx].tz, now);
+     var offB = _timeOffsetMinutes(TIME_CITIES[_timeCityBIdx].tz, now);
+     var diff = offA - offB;
+     if (diff === 0) {
+       diffEl.innerHTML =
+         '<span class="time-diff-eq">&#9670; Same UTC offset &mdash; both cities show the same time</span>';
+     } else {
+       var nameA    = TIME_CITIES[_timeCityAIdx].short;
+       var nameB    = TIME_CITIES[_timeCityBIdx].short;
+       var ahead    = diff > 0 ? nameA : nameB;
+       var behind   = diff > 0 ? nameB : nameA;
+       var absDiff  = Math.abs(diff);
+       var dh = Math.floor(absDiff / 60), dm = absDiff % 60;
+       var diffStr  = dh > 0 ? dh + 'h' + (dm ? ' ' + dm + 'm' : '') : dm + 'm';
+       diffEl.innerHTML =
+         '<span class="time-diff-info">&#9670; <strong>' + ahead + '</strong> is ' +
+         diffStr + ' ahead of <strong>' + behind + '</strong></span>';
+     }
+   }
+ }
+
+function updateTimeCities() {
+   var selA = document.getElementById('timeCitySelA');
+   var selB = document.getElementById('timeCitySelB');
+   if (selA) _timeCityAIdx = parseInt(selA.value);
+   if (selB) _timeCityBIdx = parseInt(selB.value);
+   _timeTabTick();
+ }
+
+ function filterTimeCities(side) {
+   var inp = document.getElementById('timeCityFilter' + side);
+   var sel = document.getElementById('timeCitySel'    + side);
+   if (!inp || !sel) return;
+   var q   = inp.value.toLowerCase().trim();
+   var cur = side === 'A' ? _timeCityAIdx : _timeCityBIdx;
+   var html = '';
+   var firstMatch = -1;
+   var curStillIn = false;
+   for (var i = 0; i < TIME_CITIES.length; i++) {
+     var c  = TIME_CITIES[i];
+     var ok = !q || c.display.toLowerCase().indexOf(q) !== -1;
+     if (!ok) {
+       var arr = c.search;
+       for (var j = 0; j < arr.length; j++) {
+         if (arr[j].toLowerCase().indexOf(q) !== -1) { ok = true; break; }
+       }
+     }
+     if (ok) {
+       html += '<option value="' + i + '">' + c.display + '</option>';
+       if (firstMatch < 0) firstMatch = i;
+       if (i === cur) curStillIn = true;
+     }
+   }
+   sel.innerHTML = html || '<option value="-1">— no match —</option>';
+   if (curStillIn) {
+     sel.value = String(cur);
+   } else if (firstMatch >= 0) {
+     sel.value = String(firstMatch);
+     if (side === 'A') _timeCityAIdx = firstMatch;
+     else              _timeCityBIdx = firstMatch;
+     _timeTabTick();
+   }
+ }
+
+ function openTime() {
+   activeView = 'time';
+   activeBand = null;
+   activeSub  = null;
+   document.querySelectorAll('.band-btn').forEach(function(el) {
+     el.classList.toggle('active', el.dataset.band === 'time');
+   });
+   $('#subPanel').classList.remove('open');
+   var d = $('#detailInner');
+   d.style.display = 'block';
+   $('#emptyState').style.display = 'none';
+   $('#detailPanel').classList.add('open');
+
+   /* initialise city indices on first open */
+   if (_timeCityAIdx < 0) {
+     _timeCityAIdx = TIME_CITIES.findIndex(function(c){ return c.tz === 'Europe/London'; });
+     if (_timeCityAIdx < 0) _timeCityAIdx = 0;
+   }
+   if (_timeCityBIdx < 0) {
+     _timeCityBIdx = TIME_CITIES.findIndex(function(c){ return c.tz === 'America/New_York'; });
+     if (_timeCityBIdx < 0) _timeCityBIdx = 0;
+   }
+
+   var accentClr   = '#33ddcc';
+   var cityOptions = TIME_CITIES.map(function(c, i) {
+     return '<option value="' + i + '">' + c.display + '</option>';
+   }).join('');
+
+   d.innerHTML =
+     '<div class="accent-bar" style="background:' + tc(accentClr) + '"></div>' +
+     '<div class="detail-title" style="color:' + tc(accentClr) + '">World Time</div>' +
+     '<div class="detail-subtitle">UTC clock &middot; city comparison &middot; daylight saving status</div>' +
+
+     '<div class="time-section">' +
+       '<div class="time-section-label" style="color:' + tc(accentClr) + '">Coordinated Universal Time</div>' +
+       '<div class="time-utc-box">' +
+         '<div id="timePanelUtc" class="time-utc-clock">--:--:--</div>' +
+         '<div class="time-utc-label">UTC</div>' +
+         '<div id="timePanelDate" class="time-utc-date">&mdash;</div>' +
+       '</div>' +
+       '<div id="timeSyncStatus" class="time-sync-bar"><span style="color:#3a5060">&#9675; Time sync pending&hellip;</span></div>' +
+     '</div>' +
+
+     '<div class="time-section">' +
+       '<div class="time-section-label" style="color:' + tc(accentClr) + '">City Time Comparison</div>' +
+       '<div class="time-compare-grid">' +
+         '<div class="time-city-card">' +
+           '<input id="timeCityFilterA" class="time-city-filter" type="text" placeholder="Filter cities&hellip;" ' +
+                  'oninput="filterTimeCities(\'A\')">' +
+           '<select id="timeCitySelA" class="time-select" onchange="updateTimeCities()">' +
+             cityOptions +
+           '</select>' +
+           '<div id="timeCityCardA"></div>' +
+         '</div>' +
+         '<div class="time-city-card">' +
+           '<input id="timeCityFilterB" class="time-city-filter" type="text" placeholder="Filter cities&hellip;" ' +
+                  'oninput="filterTimeCities(\'B\')">' +
+           '<select id="timeCitySelB" class="time-select" onchange="updateTimeCities()">' +
+             cityOptions +
+           '</select>' +
+           '<div id="timeCityCardB"></div>' +
+         '</div>' +
+       '</div>' +
+       '<div id="timeDiffBar" class="time-diff-bar"></div>' +
+     '</div>';
+
+   /* restore previously selected cities */
+   var selA = document.getElementById('timeCitySelA');
+   var selB = document.getElementById('timeCitySelB');
+   if (selA) selA.value = String(_timeCityAIdx);
+   if (selB) selB.value = String(_timeCityBIdx);
+
+   /* start live-tick */
+   clearInterval(_timeTabInterval);
+   _timeTabTick();
+   _timeTabInterval = setInterval(_timeTabTick, 1000);
+
+   /* fire HTTP time sync (first call only; retains result across re-opens) */
+   if (!_timeSyncOk && !_timeSyncTs) { _timeSyncFromList(); }
+   else { _updateTimeSyncUI(); }
+ }
 
 function switchCalcTab(btn, id) {
   document.querySelectorAll('.calc-tab').forEach(function(t){ t.classList.remove('active'); });
@@ -4736,7 +5494,8 @@ document.addEventListener('keydown', e => {
     { type:'broadcast' },
     { type:'calc' },
     { type:'search' },
-    { type:'antennas' }
+    { type:'antennas' },
+    { type:'time' }
   ];
 
   /* find current tab index */
@@ -4747,12 +5506,28 @@ document.addEventListener('keydown', e => {
   else if (activeView === 'calc')        curIdx = BANDS.length + 3;
   else if (activeView === 'search')      curIdx = BANDS.length + 4;
   else if (activeView === 'antennas')    curIdx = BANDS.length + 5;
+  else if (activeView === 'time')        curIdx = BANDS.length + 6;
   else if (activeView === 'band')        curIdx = BANDS.findIndex(b => b.id === activeBand);
 
-  const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
-  if (!isArrow) return;
+   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
+   if (!isArrow) return;
 
-  /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
+   /* do not hijack arrow keys while the user is typing / using a native select or
+      a filter/calc input — but allow navigation out of the global search bar and
+      the search-panel input (both are "pass-through" for tab navigation) */
+   if (inInput && !contentFocused) {
+     const ae = document.activeElement;
+     const isNavTransparent = ae &&
+       (ae.id === 'globalSearch' || ae.id === 'searchPanelInput');
+     if (isNavTransparent) {
+       /* blur so the arrow continues into tab navigation below */
+       ae.blur();
+     } else {
+       return;
+     }
+   }
+
+   /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
   if (contentFocused) {
     e.preventDefault();
     if (e.key === 'ArrowLeft') { blurContent(); return; }
@@ -4795,10 +5570,11 @@ document.addEventListener('keydown', e => {
     let next;
     if (curIdx < 0) {
       next = e.key === 'ArrowDown' ? 0 : allTabs.length - 1;
-    } else {
-      next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
-      next = Math.max(0, Math.min(next, allTabs.length - 1));
-    }
+     } else {
+       next = e.key === 'ArrowDown' ? curIdx + 1 : curIdx - 1;
+       /* wrap-around: UP from first → last, DOWN from last → first */
+       next = ((next % allTabs.length) + allTabs.length) % allTabs.length;
+     }
     const tab = allTabs[next];
     if      (tab.type === 'glossary')    openGlossary();
     else if (tab.type === 'propagation') openPropagation();
@@ -4806,6 +5582,7 @@ document.addEventListener('keydown', e => {
     else if (tab.type === 'calc')        openCalc();
     else if (tab.type === 'search')      openSearch('');
     else if (tab.type === 'antennas')    openAntennas();
+    else if (tab.type === 'time')        openTime();
     else                                 selectBand(tab.data);
   }
 
