@@ -201,13 +201,19 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .time-city-dst-row{font-size:11px;color:#3a5060;margin-bottom:4px;line-height:1.5}
 .time-diff-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:10px 14px;font-size:13px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center}
 .time-diff-eq{color:#3a5060}.time-diff-info{color:#c0ccd8}.time-diff-info strong{color:#e0e8f0}
-html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar{background:#f0f4f8;border-color:#c8cdd8}
+html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar,html.light .time-sync-bar{background:#f0f4f8;border-color:#c8cdd8}
 html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
 html.light .time-utc-clock{color:#009987}
 html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
 html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
 html.light .time-section-label{border-color:#c8cdd8}
 html.light .time-diff-info strong{color:#1e2840}
+html.light .time-city-filter{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
+html.light .time-city-filter::placeholder{color:#8a9aae}
+.time-sync-bar{background:#070c18;border:1px solid #1e2840;border-radius:3px;padding:6px 12px;font-size:11px;margin-top:8px;min-height:26px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;letter-spacing:.3px}
+.time-city-filter{width:100%;background:#0d1220;border:1px solid #1e2840;border-radius:2px;color:#c0ccd8;font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 8px;margin-bottom:5px;box-sizing:border-box}
+.time-city-filter:focus{outline:none;border-color:#33ddcc}
+.time-city-filter::placeholder{color:#3a5060}
 @media(max-width:600px){.time-compare-grid{grid-template-columns:1fr}}
 .ant-desc{font-size:14px;color:#c0ccd8;line-height:1.6;margin-bottom:10px}
 .ant-props{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:10px}
@@ -2904,8 +2910,12 @@ let activeSub  = null;      /* sub-band name string | null */
 let contentFocused = false; /* true while Right-arrow scrolls #detailInner */
 let lastSearchQuery = '';
 let _timeTabInterval = null;
-let _timeCityAIdx    = 16;  /* London (index in TIME_CITIES) */
-let _timeCityBIdx    = 5;   /* New York */
+let _timeCityAIdx    = -1;   /* set in openTime() via findIndex */
+let _timeCityBIdx    = -1;   /* set in openTime() via findIndex */
+let _timeOffset      = 0;    /* ms correction from HTTP time-sync */
+let _timeSyncSrc     = null; /* name of source that succeeded */
+let _timeSyncOk      = false;
+let _timeSyncTs      = null; /* Date of last sync */
 
 const $ = s => document.querySelector(s);
 
@@ -2963,7 +2973,7 @@ function showIntro(){
      '<div class="intro-line"><span class="key">←</span> back to band from any sub‑band</div>'+
      '<div class="intro-line"><span class="key">/</span> global search · <span class="key">D</span> dark mode · <span class="key">L</span> light mode · <span class="key">Esc</span> home</div>'+
      '<div class="intro-sep"></div>'+
-     '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas)</div>';
+     '<div class="intro-line" style="opacity:.5">Also try <strong>ABC</strong> (glossary), <strong>PROP</strong> (propagation), <strong>BC</strong> (shortwave), <strong>CALC</strong> (calculators), <strong>ANT</strong> (antennas), <strong>TIME</strong> (world clock)</div>';
 }
 
 /* ── count total sub-bands ───────────────────────────────── */
@@ -3849,77 +3859,94 @@ function openAntennas() {
 /* ══════════════════════════════════════════════════════════════
    TIME PANEL — World clock & city comparison
    ══════════════════════════════════════════════════════════════ */
-var TIME_CITIES = [
-  {name:'UTC',           tz:'UTC'},
-  {name:'Anchorage',     tz:'America/Anchorage'},
-  {name:'Los Angeles',   tz:'America/Los_Angeles'},
-  {name:'Denver',        tz:'America/Denver'},
-  {name:'Chicago',       tz:'America/Chicago'},
-  {name:'New York',      tz:'America/New_York'},
-  {name:'Toronto',       tz:'America/Toronto'},
-  {name:'Mexico City',   tz:'America/Mexico_City'},
-  {name:'Havana',        tz:'America/Havana'},
-  {name:'Bogota',        tz:'America/Bogota'},
-  {name:'Lima',          tz:'America/Lima'},
-  {name:'Caracas',       tz:'America/Caracas'},
-  {name:'Santiago',      tz:'America/Santiago'},
-  {name:'Sao Paulo',     tz:'America/Sao_Paulo'},
-  {name:'Buenos Aires',  tz:'America/Argentina/Buenos_Aires'},
-  {name:'Reykjavik',     tz:'Atlantic/Reykjavik'},
-  {name:'London',        tz:'Europe/London'},
-  {name:'Lisbon',        tz:'Europe/Lisbon'},
-  {name:'Dublin',        tz:'Europe/Dublin'},
-  {name:'Casablanca',    tz:'Africa/Casablanca'},
-  {name:'Paris',         tz:'Europe/Paris'},
-  {name:'Madrid',        tz:'Europe/Madrid'},
-  {name:'Berlin',        tz:'Europe/Berlin'},
-  {name:'Amsterdam',     tz:'Europe/Amsterdam'},
-  {name:'Rome',          tz:'Europe/Rome'},
-  {name:'Prague',        tz:'Europe/Prague'},
-  {name:'Vienna',        tz:'Europe/Vienna'},
-  {name:'Warsaw',        tz:'Europe/Warsaw'},
-  {name:'Stockholm',     tz:'Europe/Stockholm'},
-  {name:'Helsinki',      tz:'Europe/Helsinki'},
-  {name:'Athens',        tz:'Europe/Athens'},
-  {name:'Bucharest',     tz:'Europe/Bucharest'},
-  {name:'Kyiv',          tz:'Europe/Kiev'},
-  {name:'Istanbul',      tz:'Europe/Istanbul'},
-  {name:'Moscow',        tz:'Europe/Moscow'},
-  {name:'Lagos',         tz:'Africa/Lagos'},
-  {name:'Cairo',         tz:'Africa/Cairo'},
-  {name:'Nairobi',       tz:'Africa/Nairobi'},
-  {name:'Johannesburg',  tz:'Africa/Johannesburg'},
-  {name:'Baghdad',       tz:'Asia/Baghdad'},
-  {name:'Jerusalem',     tz:'Asia/Jerusalem'},
-  {name:'Riyadh',        tz:'Asia/Riyadh'},
-  {name:'Tehran',        tz:'Asia/Tehran'},
-  {name:'Dubai',         tz:'Asia/Dubai'},
-  {name:'Karachi',       tz:'Asia/Karachi'},
-  {name:'Kolkata',       tz:'Asia/Kolkata'},
-  {name:'Kathmandu',     tz:'Asia/Kathmandu'},
-  {name:'Dhaka',         tz:'Asia/Dhaka'},
-  {name:'Colombo',       tz:'Asia/Colombo'},
-  {name:'Yangon',        tz:'Asia/Yangon'},
-  {name:'Bangkok',       tz:'Asia/Bangkok'},
-  {name:'Singapore',     tz:'Asia/Singapore'},
-  {name:'Kuala Lumpur',  tz:'Asia/Kuala_Lumpur'},
-  {name:'Jakarta',       tz:'Asia/Jakarta'},
-  {name:'Hong Kong',     tz:'Asia/Hong_Kong'},
-  {name:'Shanghai',      tz:'Asia/Shanghai'},
-  {name:'Taipei',        tz:'Asia/Taipei'},
-  {name:'Seoul',         tz:'Asia/Seoul'},
-  {name:'Tokyo',         tz:'Asia/Tokyo'},
-  {name:'Vladivostok',   tz:'Asia/Vladivostok'},
-  {name:'Perth',         tz:'Australia/Perth'},
-  {name:'Adelaide',      tz:'Australia/Adelaide'},
-  {name:'Brisbane',      tz:'Australia/Brisbane'},
-  {name:'Sydney',        tz:'Australia/Sydney'},
-  {name:'Melbourne',     tz:'Australia/Melbourne'},
-  {name:'Auckland',      tz:'Pacific/Auckland'},
-  {name:'Honolulu',      tz:'Pacific/Honolulu'},
-  {name:'Suva',          tz:'Pacific/Fiji'}
-];
-/* _timeCityAIdx=16 (London), _timeCityBIdx=5 (New York) set at module level */
+ var TIME_CITIES = [
+   /* UTC-12 → UTC-1 */
+   {display:'(UTC-12:00) International Date Line West', tz:'Etc/GMT+12',                       short:'Dateline',      search:['dateline','international date line','GMT-12']},
+   {display:'(UTC-11:00) Coordinated Universal Time-11',tz:'Pacific/Pago_Pago',                short:'UTC-11',        search:['UTC-11','Pago Pago','Samoa','American Samoa']},
+   {display:'(UTC-10:00) Hawaii',                        tz:'Pacific/Honolulu',                 short:'Hawaii',        search:['Hawaii','Honolulu','HST']},
+   {display:'(UTC-09:00) Alaska',                        tz:'America/Anchorage',                short:'Alaska',        search:['Alaska','Anchorage','AKST']},
+   {display:'(UTC-08:00) Pacific Time (US & Canada)',    tz:'America/Los_Angeles',              short:'Pacific Time',  search:['Pacific','Los Angeles','Vancouver','Seattle','Portland']},
+   {display:'(UTC-07:00) Mountain Time (US & Canada)',   tz:'America/Denver',                   short:'Mountain Time', search:['Mountain','Denver','Salt Lake City','MST']},
+   {display:'(UTC-07:00) Arizona',                       tz:'America/Phoenix',                  short:'Arizona',       search:['Arizona','Phoenix','Mountain Standard']},
+   {display:'(UTC-06:00) Central Time (US & Canada)',    tz:'America/Chicago',                  short:'Central Time',  search:['Central','Chicago','Dallas','Houston','Winnipeg','CST']},
+   {display:'(UTC-06:00) Mexico City',                   tz:'America/Mexico_City',              short:'Mexico City',   search:['Mexico City','Guadalajara','Monterrey']},
+   {display:'(UTC-05:00) Eastern Time (US & Canada)',    tz:'America/New_York',                 short:'Eastern Time',  search:['Eastern','New York','Toronto','Boston','Miami','Atlanta','EST']},
+   {display:'(UTC-05:00) Havana',                        tz:'America/Havana',                   short:'Havana',        search:['Havana','Cuba','CST']},
+   {display:'(UTC-05:00) Bogota, Lima, Quito',           tz:'America/Bogota',                   short:'Bogota',        search:['Bogota','Lima','Quito','Colombia','Peru','Ecuador']},
+   {display:'(UTC-04:30) Caracas',                       tz:'America/Caracas',                  short:'Caracas',       search:['Caracas','Venezuela','VET']},
+   {display:'(UTC-04:00) Atlantic Time (Canada)',         tz:'America/Halifax',                  short:'Halifax',       search:['Atlantic','Halifax','Nova Scotia','AST']},
+   {display:'(UTC-04:00) Santiago',                      tz:'America/Santiago',                 short:'Santiago',      search:['Santiago','Chile']},
+   {display:'(UTC-03:30) Newfoundland',                  tz:'America/St_Johns',                 short:'Newfoundland',  search:['Newfoundland','St. Johns','St Johns','NST']},
+   {display:'(UTC-03:00) Brasilia',                      tz:'America/Sao_Paulo',                short:'Brasilia',      search:['Brasilia','Sao Paulo','São Paulo','Brazil','BRT']},
+   {display:'(UTC-03:00) Buenos Aires',                  tz:'America/Argentina/Buenos_Aires',   short:'Buenos Aires',  search:['Buenos Aires','Argentina','ART']},
+   {display:'(UTC-01:00) Azores',                        tz:'Atlantic/Azores',                  short:'Azores',        search:['Azores','AZOT']},
+   /* UTC+0 */
+   {display:'(UTC+00:00) UTC',                           tz:'UTC',                              short:'UTC',           search:['UTC','Universal','Coordinated Universal Time']},
+   {display:'(UTC+00:00) Reykjavik',                     tz:'Atlantic/Reykjavik',               short:'Reykjavik',     search:['Reykjavik','Iceland','GMT']},
+   {display:'(UTC+00:00) Dublin, Edinburgh, Lisbon, London', tz:'Europe/London',                short:'London',        search:['London','Dublin','Edinburgh','Lisbon','UK','Ireland','England','Wales','GMT','WET','BST']},
+   {display:'(UTC+00:00) Casablanca',                    tz:'Africa/Casablanca',                short:'Casablanca',    search:['Casablanca','Morocco','Rabat']},
+   /* UTC+1 */
+   {display:'(UTC+01:00) Amsterdam, Berlin, Rome, Stockholm, Vienna', tz:'Europe/Berlin',       short:'Berlin',        search:['Berlin','Amsterdam','Rome','Stockholm','Vienna','Frankfurt','Milan','CET']},
+   {display:'(UTC+01:00) Brussels, Copenhagen, Madrid, Paris', tz:'Europe/Paris',               short:'Paris',         search:['Paris','Brussels','Copenhagen','Madrid','Monaco','CET']},
+   {display:'(UTC+01:00) Warsaw',                        tz:'Europe/Warsaw',                    short:'Warsaw',        search:['Warsaw','Poland','CET']},
+   {display:'(UTC+01:00) West Central Africa',           tz:'Africa/Lagos',                     short:'Lagos',         search:['Lagos','Nigeria','West Africa','WAT']},
+   /* UTC+2 */
+   {display:'(UTC+02:00) Athens, Bucharest',             tz:'Europe/Athens',                    short:'Athens',        search:['Athens','Bucharest','Greece','Romania','EET']},
+   {display:'(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius', tz:'Europe/Helsinki',  short:'Helsinki',      search:['Helsinki','Kyiv','Kiev','Riga','Sofia','Tallinn','Vilnius','Finland','Ukraine','Latvia','Bulgaria','Estonia','Lithuania','EET']},
+   {display:'(UTC+02:00) Cairo',                         tz:'Africa/Cairo',                     short:'Cairo',         search:['Cairo','Egypt','EET']},
+   {display:'(UTC+02:00) Jerusalem',                     tz:'Asia/Jerusalem',                   short:'Jerusalem',     search:['Jerusalem','Israel','IST','Tel Aviv']},
+   {display:'(UTC+02:00) Kaliningrad',                   tz:'Europe/Kaliningrad',               short:'Kaliningrad',   search:['Kaliningrad','Russia','EET']},
+   {display:'(UTC+02:00) Harare, Pretoria',              tz:'Africa/Johannesburg',              short:'Johannesburg',  search:['Johannesburg','Cape Town','Harare','Pretoria','South Africa','Zimbabwe','SAST','CAT']},
+   /* UTC+3 */
+   {display:'(UTC+03:00) Baghdad',                       tz:'Asia/Baghdad',                     short:'Baghdad',       search:['Baghdad','Iraq','AST']},
+   {display:'(UTC+03:00) Istanbul',                      tz:'Europe/Istanbul',                  short:'Istanbul',      search:['Istanbul','Turkey','Ankara','TRT']},
+   {display:'(UTC+03:00) Kuwait, Riyadh',                tz:'Asia/Riyadh',                      short:'Riyadh',        search:['Riyadh','Kuwait','Saudi Arabia','AST']},
+   {display:'(UTC+03:00) Moscow, St. Petersburg',        tz:'Europe/Moscow',                    short:'Moscow',        search:['Moscow','St. Petersburg','Saint Petersburg','Volgograd','Russia','MSK']},
+   {display:'(UTC+03:00) Nairobi',                       tz:'Africa/Nairobi',                   short:'Nairobi',       search:['Nairobi','Kenya','EAT']},
+   {display:'(UTC+03:30) Tehran',                        tz:'Asia/Tehran',                      short:'Tehran',        search:['Tehran','Iran','IRST']},
+   /* UTC+4 */
+   {display:'(UTC+04:00) Abu Dhabi, Muscat',             tz:'Asia/Dubai',                       short:'Dubai',         search:['Dubai','Abu Dhabi','Muscat','UAE','Oman','GST']},
+   {display:'(UTC+04:00) Baku',                          tz:'Asia/Baku',                        short:'Baku',          search:['Baku','Azerbaijan','AZT']},
+   {display:'(UTC+04:00) Yerevan',                       tz:'Asia/Yerevan',                     short:'Yerevan',       search:['Yerevan','Armenia','AMT']},
+   {display:'(UTC+04:30) Kabul',                         tz:'Asia/Kabul',                       short:'Kabul',         search:['Kabul','Afghanistan','AFT']},
+   /* UTC+5 */
+   {display:'(UTC+05:00) Ekaterinburg',                  tz:'Asia/Yekaterinburg',               short:'Ekaterinburg',  search:['Ekaterinburg','Yekaterinburg','Russia','YEKT']},
+   {display:'(UTC+05:00) Islamabad, Karachi',            tz:'Asia/Karachi',                     short:'Karachi',       search:['Karachi','Islamabad','Pakistan','PKT']},
+   {display:'(UTC+05:00) Ashgabat, Tashkent',            tz:'Asia/Tashkent',                    short:'Tashkent',      search:['Tashkent','Ashgabat','Uzbekistan','Turkmenistan','UZT']},
+   {display:'(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi', tz:'Asia/Kolkata',               short:'Kolkata',       search:['Kolkata','Calcutta','Chennai','Madras','Mumbai','Bombay','New Delhi','India','IST']},
+   {display:'(UTC+05:30) Sri Jayawardenepura',           tz:'Asia/Colombo',                     short:'Colombo',       search:['Colombo','Sri Lanka','SLST']},
+   {display:'(UTC+05:45) Kathmandu',                     tz:'Asia/Kathmandu',                   short:'Kathmandu',     search:['Kathmandu','Nepal','NPT']},
+   /* UTC+6 */
+   {display:'(UTC+06:00) Dhaka',                         tz:'Asia/Dhaka',                       short:'Dhaka',         search:['Dhaka','Bangladesh','BST']},
+   {display:'(UTC+06:30) Yangon (Rangoon)',               tz:'Asia/Yangon',                      short:'Yangon',        search:['Yangon','Rangoon','Myanmar','MMT']},
+   /* UTC+7 */
+   {display:'(UTC+07:00) Bangkok, Hanoi, Jakarta',       tz:'Asia/Bangkok',                     short:'Bangkok',       search:['Bangkok','Hanoi','Jakarta','Thailand','Vietnam','Indonesia','ICT']},
+   {display:'(UTC+07:00) Krasnoyarsk',                   tz:'Asia/Krasnoyarsk',                 short:'Krasnoyarsk',   search:['Krasnoyarsk','Russia','KRAT']},
+   /* UTC+8 */
+   {display:'(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi', tz:'Asia/Shanghai',            short:'Beijing',       search:['Beijing','Shanghai','Chongqing','Hong Kong','Urumqi','China','CST']},
+   {display:'(UTC+08:00) Kuala Lumpur, Singapore',       tz:'Asia/Singapore',                   short:'Singapore',     search:['Singapore','Kuala Lumpur','Malaysia','SGT','MYT']},
+   {display:'(UTC+08:00) Taipei',                        tz:'Asia/Taipei',                      short:'Taipei',        search:['Taipei','Taiwan','CST']},
+   {display:'(UTC+08:00) Perth',                         tz:'Australia/Perth',                  short:'Perth',         search:['Perth','Australia','AWST']},
+   {display:'(UTC+08:00) Irkutsk',                       tz:'Asia/Irkutsk',                     short:'Irkutsk',       search:['Irkutsk','Russia','IRKT']},
+   /* UTC+9 */
+   {display:'(UTC+09:00) Osaka, Sapporo, Tokyo',         tz:'Asia/Tokyo',                       short:'Tokyo',         search:['Tokyo','Osaka','Sapporo','Japan','JST']},
+   {display:'(UTC+09:00) Seoul',                         tz:'Asia/Seoul',                       short:'Seoul',         search:['Seoul','Korea','KST']},
+   {display:'(UTC+09:00) Yakutsk',                       tz:'Asia/Yakutsk',                     short:'Yakutsk',       search:['Yakutsk','Russia','YAKT']},
+   {display:'(UTC+09:30) Adelaide',                      tz:'Australia/Adelaide',               short:'Adelaide',      search:['Adelaide','Australia','ACST']},
+   {display:'(UTC+09:30) Darwin',                        tz:'Australia/Darwin',                 short:'Darwin',        search:['Darwin','Australia','ACST']},
+   /* UTC+10 */
+   {display:'(UTC+10:00) Brisbane',                      tz:'Australia/Brisbane',               short:'Brisbane',      search:['Brisbane','Australia','AEST']},
+   {display:'(UTC+10:00) Canberra, Melbourne, Sydney',   tz:'Australia/Sydney',                 short:'Sydney',        search:['Sydney','Melbourne','Canberra','Australia','AEST']},
+   {display:'(UTC+10:00) Vladivostok',                   tz:'Asia/Vladivostok',                 short:'Vladivostok',   search:['Vladivostok','Russia','VLAT']},
+   /* UTC+11 */
+   {display:'(UTC+11:00) Solomon Is., New Caledonia',    tz:'Pacific/Guadalcanal',              short:'Honiara',       search:['Solomon Islands','Honiara','New Caledonia','SBT']},
+   /* UTC+12 */
+   {display:'(UTC+12:00) Auckland, Wellington',          tz:'Pacific/Auckland',                 short:'Auckland',      search:['Auckland','Wellington','New Zealand','NZST']},
+   {display:'(UTC+12:00) Fiji',                          tz:'Pacific/Fiji',                     short:'Fiji',          search:['Fiji','Suva','FJT']},
+   {display:'(UTC+12:00) Petropavlovsk-Kamchatsky',      tz:'Asia/Kamchatka',                   short:'Kamchatka',     search:['Kamchatka','Petropavlovsk','Russia','PETT']},
+   {display:"(UTC+13:00) Nuku'alofa",                    tz:'Pacific/Tongatapu',                short:"Nuku'alofa",    search:['Tonga','Tongatapu','TOT']}
+ ];
+ /* _timeCityAIdx / _timeCityBIdx initialised in openTime() via findIndex */
 
 function _timeOffsetMinutes(tz, date) {
   try {
@@ -3979,11 +4006,124 @@ function _timeDSTInfo(tz) {
 }
 
 function _timeFmtOff(mins) {
-  if (mins === 0) return 'UTC';
-  var sign = mins > 0 ? '+' : '-';
-  var a    = Math.abs(mins);
-  return 'UTC' + sign + String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
-}
+   if (mins === 0) return 'UTC';
+   var sign = mins > 0 ? '+' : '-';
+   var a    = Math.abs(mins);
+   return 'UTC' + sign + String(Math.floor(a / 60)).padStart(2, '0') + ':' + String(a % 60).padStart(2, '0');
+ }
+
+ /* ── HTTP time-sync (browser NTP approximation) ──────────── */
+ var NTP_SOURCES = [
+   { name:'timeapi.io',    url:'https://timeapi.io/api/time/current/zone?timeZone=UTC',
+     parse: function(txt) {
+       var j = JSON.parse(txt); var dt = j.dateTime || j.datetime;
+       if (!dt) return null;
+       if (dt.indexOf('Z') < 0 && dt.indexOf('+') < 0) dt += 'Z';
+       return new Date(dt).getTime();
+     }
+   },
+   { name:'worldtimeapi',  url:'https://worldtimeapi.org/api/timezone/UTC',
+     parse: function(txt) {
+       var j = JSON.parse(txt);
+       if (j.utc_datetime) return new Date(j.utc_datetime).getTime();
+       return j.unixtime ? j.unixtime * 1000 : null;
+     }
+   },
+   { name:'cloudflare',    url:'https://www.cloudflare.com/cdn-cgi/trace',
+     parse: function(txt) {
+       var m = txt.match(/ts=(\d+\.\d+)/);
+       return m ? Math.round(parseFloat(m[1]) * 1000) : null;
+     }
+   },
+   { name:'1.1.1.1',       url:'https://1.1.1.1/cdn-cgi/trace',
+     parse: function(txt) {
+       var m = txt.match(/ts=(\d+\.\d+)/);
+       return m ? Math.round(parseFloat(m[1]) * 1000) : null;
+     }
+   },
+   { name:'akamai',        url:'https://time.akamai.com/?ms',
+     parse: function(txt) { var n = parseFloat(txt.trim()); return isNaN(n) ? null : Math.round(n); }
+   },
+   { name:'jsontest',      url:'https://time.jsontest.com/',
+     parse: function(txt) {
+       var j = JSON.parse(txt);
+       return j.milliseconds_since_epoch ? parseInt(j.milliseconds_since_epoch) : null;
+     }
+   },
+   /* Date-header fallbacks (parse:null → handled separately) */
+   { name:'httpbin',       url:'https://httpbin.org/headers',      parse: null },
+   { name:'github-api',    url:'https://api.github.com/',           parse: null },
+   { name:'cfapi',         url:'https://api.cloudflare.com/client/v4/', parse: null },
+   { name:'googleapis',    url:'https://www.googleapis.com/discovery/v1/apis', parse: null }
+ ];
+
+ function _timeSyncOne(src) {
+   return new Promise(function(resolve, reject) {
+     var t0 = Date.now();
+     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+     var tid = setTimeout(function() { if (controller) controller.abort(); reject(new Error('timeout')); }, 4000);
+     var opts = { cache: 'no-store' };
+     if (controller) opts.signal = controller.signal;
+     fetch(src.url, opts)
+       .then(function(resp) {
+         clearTimeout(tid);
+         var t1 = Date.now();
+         if (src.parse) {
+           return resp.text().then(function(txt) {
+             var serverMs = src.parse(txt);
+             if (serverMs === null || isNaN(serverMs)) throw new Error('parse fail');
+             var rtt = t1 - t0;
+             resolve({ name: src.name, offset: Math.round(serverMs - t1 + rtt / 2) });
+           });
+         } else {
+           var dateHdr = resp.headers.get('Date');
+           if (!dateHdr) { reject(new Error('no Date header')); return; }
+           var serverMs2 = new Date(dateHdr).getTime();
+           var rtt2 = t1 - t0;
+           resolve({ name: src.name, offset: Math.round(serverMs2 - t1 + rtt2 / 2) });
+         }
+       })
+       .catch(function(err) { clearTimeout(tid); reject(err); });
+   });
+ }
+
+ function _timeSyncFromList() {
+   var i = 0;
+   function tryNext() {
+     if (i >= NTP_SOURCES.length) {
+       _updateTimeSyncUI();   /* all failed — show pending */
+       return;
+     }
+     var src = NTP_SOURCES[i++];
+     _timeSyncOne(src).then(function(result) {
+       _timeOffset  = result.offset;
+       _timeSyncSrc = result.name;
+       _timeSyncOk  = true;
+       _timeSyncTs  = new Date();
+       _updateTimeSyncUI();
+     }).catch(function() { tryNext(); });
+   }
+   tryNext();
+ }
+
+ function _updateTimeSyncUI() {
+   var el = document.getElementById('timeSyncStatus');
+   if (!el) return;
+   if (!_timeSyncOk) {
+     el.innerHTML = '<span style="color:#3a5060">&#9675; Time sync pending&hellip;</span>';
+     return;
+   }
+   var offStr = _timeOffset >= 0 ? '+' + _timeOffset : String(_timeOffset);
+   var tsStr  = _timeSyncTs
+     ? (String(_timeSyncTs.getUTCHours()).padStart(2,'0') + ':' +
+        String(_timeSyncTs.getUTCMinutes()).padStart(2,'0') + 'Z')
+     : '';
+   var c = '#33ddcc';
+   el.innerHTML =
+     '<span style="color:' + tc(c) + '">&#9679; Synced via ' + _timeSyncSrc + '</span>' +
+     '<span style="color:#5a7080;margin-left:10px">offset ' + offStr + '&thinsp;ms</span>' +
+     (tsStr ? '<span style="color:#3a5060;margin-left:10px">at ' + tsStr + '</span>' : '');
+ }
 
 function _timeRenderCard(elId, cityIdx, now) {
   var el = document.getElementById(elId);
@@ -4028,123 +4168,177 @@ function _timeRenderCard(elId, cityIdx, now) {
 }
 
 function _timeTabTick() {
-  if (activeView !== 'time') {
-    clearInterval(_timeTabInterval);
-    _timeTabInterval = null;
-    return;
-  }
-  var now = new Date();
-  /* UTC clock */
-  var utcEl  = document.getElementById('timePanelUtc');
-  var dateEl = document.getElementById('timePanelDate');
-  if (utcEl) {
-    utcEl.textContent =
-      String(now.getUTCHours()).padStart(2, '0') + ':' +
-      String(now.getUTCMinutes()).padStart(2, '0') + ':' +
-      String(now.getUTCSeconds()).padStart(2, '0');
-  }
-  if (dateEl) {
-    dateEl.textContent = now.toLocaleDateString('en-GB', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-    });
-  }
-  /* city cards */
-  _timeRenderCard('timeCityCardA', _timeCityAIdx, now);
-  _timeRenderCard('timeCityCardB', _timeCityBIdx, now);
-  /* diff bar */
-  var diffEl = document.getElementById('timeDiffBar');
-  if (diffEl) {
-    var offA = _timeOffsetMinutes(TIME_CITIES[_timeCityAIdx].tz, now);
-    var offB = _timeOffsetMinutes(TIME_CITIES[_timeCityBIdx].tz, now);
-    var diff = offA - offB;
-    if (diff === 0) {
-      diffEl.innerHTML =
-        '<span class="time-diff-eq">&#9670; Same UTC offset &mdash; both cities show the same time</span>';
-    } else {
-      var nameA    = TIME_CITIES[_timeCityAIdx].name;
-      var nameB    = TIME_CITIES[_timeCityBIdx].name;
-      var ahead    = diff > 0 ? nameA : nameB;
-      var behind   = diff > 0 ? nameB : nameA;
-      var absDiff  = Math.abs(diff);
-      var dh = Math.floor(absDiff / 60), dm = absDiff % 60;
-      var diffStr  = dh > 0 ? dh + 'h' + (dm ? ' ' + dm + 'm' : '') : dm + 'm';
-      diffEl.innerHTML =
-        '<span class="time-diff-info">&#9670; <strong>' + ahead + '</strong> is ' +
-        diffStr + ' ahead of <strong>' + behind + '</strong></span>';
-    }
-  }
-}
+   if (activeView !== 'time') {
+     clearInterval(_timeTabInterval);
+     _timeTabInterval = null;
+     return;
+   }
+   var now = new Date(Date.now() + _timeOffset);
+   /* UTC clock */
+   var utcEl  = document.getElementById('timePanelUtc');
+   var dateEl = document.getElementById('timePanelDate');
+   if (utcEl) {
+     utcEl.textContent =
+       String(now.getUTCHours()).padStart(2, '0') + ':' +
+       String(now.getUTCMinutes()).padStart(2, '0') + ':' +
+       String(now.getUTCSeconds()).padStart(2, '0');
+   }
+   if (dateEl) {
+     dateEl.textContent = now.toLocaleDateString('en-GB', {
+       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+     });
+   }
+   /* city cards */
+   _timeRenderCard('timeCityCardA', _timeCityAIdx, now);
+   _timeRenderCard('timeCityCardB', _timeCityBIdx, now);
+   /* diff bar */
+   var diffEl = document.getElementById('timeDiffBar');
+   if (diffEl && _timeCityAIdx >= 0 && _timeCityBIdx >= 0) {
+     var offA = _timeOffsetMinutes(TIME_CITIES[_timeCityAIdx].tz, now);
+     var offB = _timeOffsetMinutes(TIME_CITIES[_timeCityBIdx].tz, now);
+     var diff = offA - offB;
+     if (diff === 0) {
+       diffEl.innerHTML =
+         '<span class="time-diff-eq">&#9670; Same UTC offset &mdash; both cities show the same time</span>';
+     } else {
+       var nameA    = TIME_CITIES[_timeCityAIdx].short;
+       var nameB    = TIME_CITIES[_timeCityBIdx].short;
+       var ahead    = diff > 0 ? nameA : nameB;
+       var behind   = diff > 0 ? nameB : nameA;
+       var absDiff  = Math.abs(diff);
+       var dh = Math.floor(absDiff / 60), dm = absDiff % 60;
+       var diffStr  = dh > 0 ? dh + 'h' + (dm ? ' ' + dm + 'm' : '') : dm + 'm';
+       diffEl.innerHTML =
+         '<span class="time-diff-info">&#9670; <strong>' + ahead + '</strong> is ' +
+         diffStr + ' ahead of <strong>' + behind + '</strong></span>';
+     }
+   }
+ }
 
 function updateTimeCities() {
-  var selA = document.getElementById('timeCitySelA');
-  var selB = document.getElementById('timeCitySelB');
-  if (selA) _timeCityAIdx = parseInt(selA.value) || 0;
-  if (selB) _timeCityBIdx = parseInt(selB.value) || 0;
-  _timeTabTick();
-}
+   var selA = document.getElementById('timeCitySelA');
+   var selB = document.getElementById('timeCitySelB');
+   if (selA) _timeCityAIdx = parseInt(selA.value);
+   if (selB) _timeCityBIdx = parseInt(selB.value);
+   _timeTabTick();
+ }
 
-function openTime() {
-  activeView = 'time';
-  activeBand = null;
-  activeSub  = null;
-  document.querySelectorAll('.band-btn').forEach(function(el) {
-    el.classList.toggle('active', el.dataset.band === 'time');
-  });
-  $('#subPanel').classList.remove('open');
-  var d = $('#detailInner');
-  d.style.display = 'block';
-  $('#emptyState').style.display = 'none';
-  $('#detailPanel').classList.add('open');
+ function filterTimeCities(side) {
+   var inp = document.getElementById('timeCityFilter' + side);
+   var sel = document.getElementById('timeCitySel'    + side);
+   if (!inp || !sel) return;
+   var q   = inp.value.toLowerCase().trim();
+   var cur = side === 'A' ? _timeCityAIdx : _timeCityBIdx;
+   var html = '';
+   var firstMatch = -1;
+   var curStillIn = false;
+   for (var i = 0; i < TIME_CITIES.length; i++) {
+     var c  = TIME_CITIES[i];
+     var ok = !q || c.display.toLowerCase().indexOf(q) !== -1;
+     if (!ok) {
+       var arr = c.search;
+       for (var j = 0; j < arr.length; j++) {
+         if (arr[j].toLowerCase().indexOf(q) !== -1) { ok = true; break; }
+       }
+     }
+     if (ok) {
+       html += '<option value="' + i + '">' + c.display + '</option>';
+       if (firstMatch < 0) firstMatch = i;
+       if (i === cur) curStillIn = true;
+     }
+   }
+   sel.innerHTML = html || '<option value="-1">— no match —</option>';
+   if (curStillIn) {
+     sel.value = String(cur);
+   } else if (firstMatch >= 0) {
+     sel.value = String(firstMatch);
+     if (side === 'A') _timeCityAIdx = firstMatch;
+     else              _timeCityBIdx = firstMatch;
+     _timeTabTick();
+   }
+ }
 
-  var accentClr   = '#33ddcc';
-  var cityOptions = TIME_CITIES.map(function(c, i) {
-    return '<option value="' + i + '">' + c.name + '</option>';
-  }).join('');
+ function openTime() {
+   activeView = 'time';
+   activeBand = null;
+   activeSub  = null;
+   document.querySelectorAll('.band-btn').forEach(function(el) {
+     el.classList.toggle('active', el.dataset.band === 'time');
+   });
+   $('#subPanel').classList.remove('open');
+   var d = $('#detailInner');
+   d.style.display = 'block';
+   $('#emptyState').style.display = 'none';
+   $('#detailPanel').classList.add('open');
 
-  d.innerHTML =
-    '<div class="accent-bar" style="background:' + tc(accentClr) + '"></div>' +
-    '<div class="detail-title" style="color:' + tc(accentClr) + '">World Time</div>' +
-    '<div class="detail-subtitle">UTC clock &middot; city comparison &middot; daylight saving status</div>' +
+   /* initialise city indices on first open */
+   if (_timeCityAIdx < 0) {
+     _timeCityAIdx = TIME_CITIES.findIndex(function(c){ return c.tz === 'Europe/London'; });
+     if (_timeCityAIdx < 0) _timeCityAIdx = 0;
+   }
+   if (_timeCityBIdx < 0) {
+     _timeCityBIdx = TIME_CITIES.findIndex(function(c){ return c.tz === 'America/New_York'; });
+     if (_timeCityBIdx < 0) _timeCityBIdx = 0;
+   }
 
-    '<div class="time-section">' +
-      '<div class="time-section-label" style="color:' + tc(accentClr) + '">Coordinated Universal Time</div>' +
-      '<div class="time-utc-box">' +
-        '<div id="timePanelUtc" class="time-utc-clock">--:--:--</div>' +
-        '<div class="time-utc-label">UTC</div>' +
-        '<div id="timePanelDate" class="time-utc-date">&mdash;</div>' +
-      '</div>' +
-    '</div>' +
+   var accentClr   = '#33ddcc';
+   var cityOptions = TIME_CITIES.map(function(c, i) {
+     return '<option value="' + i + '">' + c.display + '</option>';
+   }).join('');
 
-    '<div class="time-section">' +
-      '<div class="time-section-label" style="color:' + tc(accentClr) + '">City Time Comparison</div>' +
-      '<div class="time-compare-grid">' +
-        '<div class="time-city-card">' +
-          '<select id="timeCitySelA" class="time-select" onchange="updateTimeCities()">' +
-            cityOptions +
-          '</select>' +
-          '<div id="timeCityCardA"></div>' +
-        '</div>' +
-        '<div class="time-city-card">' +
-          '<select id="timeCitySelB" class="time-select" onchange="updateTimeCities()">' +
-            cityOptions +
-          '</select>' +
-          '<div id="timeCityCardB"></div>' +
-        '</div>' +
-      '</div>' +
-      '<div id="timeDiffBar" class="time-diff-bar"></div>' +
-    '</div>';
+   d.innerHTML =
+     '<div class="accent-bar" style="background:' + tc(accentClr) + '"></div>' +
+     '<div class="detail-title" style="color:' + tc(accentClr) + '">World Time</div>' +
+     '<div class="detail-subtitle">UTC clock &middot; city comparison &middot; daylight saving status</div>' +
 
-  /* restore previously selected cities */
-  var selA = document.getElementById('timeCitySelA');
-  var selB = document.getElementById('timeCitySelB');
-  if (selA) selA.value = String(_timeCityAIdx);
-  if (selB) selB.value = String(_timeCityBIdx);
+     '<div class="time-section">' +
+       '<div class="time-section-label" style="color:' + tc(accentClr) + '">Coordinated Universal Time</div>' +
+       '<div class="time-utc-box">' +
+         '<div id="timePanelUtc" class="time-utc-clock">--:--:--</div>' +
+         '<div class="time-utc-label">UTC</div>' +
+         '<div id="timePanelDate" class="time-utc-date">&mdash;</div>' +
+       '</div>' +
+       '<div id="timeSyncStatus" class="time-sync-bar"><span style="color:#3a5060">&#9675; Time sync pending&hellip;</span></div>' +
+     '</div>' +
 
-  /* start live-tick */
-  clearInterval(_timeTabInterval);
-  _timeTabTick();
-  _timeTabInterval = setInterval(_timeTabTick, 1000);
-}
+     '<div class="time-section">' +
+       '<div class="time-section-label" style="color:' + tc(accentClr) + '">City Time Comparison</div>' +
+       '<div class="time-compare-grid">' +
+         '<div class="time-city-card">' +
+           '<input id="timeCityFilterA" class="time-city-filter" type="text" placeholder="Filter cities&hellip;" ' +
+                  'oninput="filterTimeCities(\'A\')">' +
+           '<select id="timeCitySelA" class="time-select" onchange="updateTimeCities()">' +
+             cityOptions +
+           '</select>' +
+           '<div id="timeCityCardA"></div>' +
+         '</div>' +
+         '<div class="time-city-card">' +
+           '<input id="timeCityFilterB" class="time-city-filter" type="text" placeholder="Filter cities&hellip;" ' +
+                  'oninput="filterTimeCities(\'B\')">' +
+           '<select id="timeCitySelB" class="time-select" onchange="updateTimeCities()">' +
+             cityOptions +
+           '</select>' +
+           '<div id="timeCityCardB"></div>' +
+         '</div>' +
+       '</div>' +
+       '<div id="timeDiffBar" class="time-diff-bar"></div>' +
+     '</div>';
+
+   /* restore previously selected cities */
+   var selA = document.getElementById('timeCitySelA');
+   var selB = document.getElementById('timeCitySelB');
+   if (selA) selA.value = String(_timeCityAIdx);
+   if (selB) selB.value = String(_timeCityBIdx);
+
+   /* start live-tick */
+   clearInterval(_timeTabInterval);
+   _timeTabTick();
+   _timeTabInterval = setInterval(_timeTabTick, 1000);
+
+   /* fire HTTP time sync (first call only; retains result across re-opens) */
+   if (!_timeSyncOk && !_timeSyncTs) { _timeSyncFromList(); }
+   else { _updateTimeSyncUI(); }
+ }
 
 function switchCalcTab(btn, id) {
   document.querySelectorAll('.calc-tab').forEach(function(t){ t.classList.remove('active'); });
@@ -5096,9 +5290,12 @@ document.addEventListener('keydown', e => {
   else if (activeView === 'band')        curIdx = BANDS.findIndex(b => b.id === activeBand);
 
   const isArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);
-  if (!isArrow) return;
+   if (!isArrow) return;
 
-  /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
+   /* do not hijack arrow keys while the user is typing / using a select */
+   if (inInput && !contentFocused) return;
+
+   /* ── Content-scroll mode: Up/Down scrolls detail, Left exits ── */
   if (contentFocused) {
     e.preventDefault();
     if (e.key === 'ArrowLeft') { blurContent(); return; }
