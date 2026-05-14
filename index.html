@@ -209,8 +209,14 @@ html.light .time-utc-box,html.light .time-city-card,html.light .time-diff-bar,ht
 html.light .time-select{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
 html.light .time-utc-clock{color:#009987}
 html.light .time-utc-label,html.light .time-utc-date,html.light .time-city-date{color:#7a8898}
-html.light .time-city-tzname{color:#bb6600}
+html.light .time-city-time{color:#2a3040}
+html.light .time-city-offset{color:#1155cc;background:#1155cc0e;border-color:#1155cc30}
+html.light .time-city-tzname{color:#bb6600;background:#cc77000e;border-color:#cc770028}
+html.light .time-dst-on{color:#00884a}
+html.light .time-dst-off{color:#5a6878}
 html.light .time-dst-none,html.light .time-city-dst-row{color:#8a9aae}
+html.light .time-diff-eq{color:#7a8a9a}
+html.light .time-diff-info{color:#3a4558}
 html.light .time-section-label{border-color:#c8cdd8}
 html.light .time-diff-info strong{color:#1e2840}
 html.light .time-city-filter{background:#e8ecf0;border-color:#c8cdd8;color:#1e2840}
@@ -2933,7 +2939,7 @@ const LIGHT_COLORS = {
   '#aaff33':'#669900','#33ff88':'#00884a','#33aaff':'#0077cc',
   '#aa66ff':'#7744cc','#88ccff':'#2277cc','#ffaa44':'#cc7700',
   '#ff8844':'#cc5500','#44ccff':'#1155cc','#88ff66':'#117711',
-  '#33ddcc':'#009987'
+  '#33ddcc':'#009987','#5a7080':'#5a6878','#3a5060':'#7a8a9a'
 };
 function isLight(){ return document.documentElement.classList.contains('light'); }
 function tc(c){ return isLight() ? (LIGHT_COLORS[c]||c) : c; }
@@ -4323,7 +4329,7 @@ function _timeFmtOff(mins) {
    var el = document.getElementById('timeSyncStatus');
    if (!el) return;
    if (!_timeSyncOk) {
-     el.innerHTML = '<span style="color:#3a5060">&#9675; Time sync pending&hellip;</span>';
+      el.innerHTML = '<span style="color:' + tc('#3a5060') + '">&#9675; Time sync pending&hellip;</span>';
      return;
    }
    var offStr = _timeOffset >= 0 ? '+' + _timeOffset : String(_timeOffset);
@@ -4334,8 +4340,8 @@ function _timeFmtOff(mins) {
    var c = '#33ddcc';
    el.innerHTML =
      '<span style="color:' + tc(c) + '">&#9679; Synced via ' + _timeSyncSrc + '</span>' +
-     '<span style="color:#5a7080;margin-left:10px">offset ' + offStr + '&thinsp;ms</span>' +
-     (tsStr ? '<span style="color:#3a5060;margin-left:10px">at ' + tsStr + '</span>' : '');
+      '<span style="color:' + tc('#5a7080') + ';margin-left:10px">offset ' + offStr + '&thinsp;ms</span>' +
+      (tsStr ? '<span style="color:' + tc('#3a5060') + ';margin-left:10px">at ' + tsStr + '</span>' : '');
  }
 
 function _timeRenderCard(elId, cityIdx, now) {
