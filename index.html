@@ -244,6 +244,25 @@ html.light .time-city-filter::placeholder{color:#8a9aae}
   .ant-body>:nth-child(1),.ant-body>:nth-child(2),.ant-body>:nth-child(3){grid-column:1;grid-row:auto}
 }
 
+/* ── Last Longwave Stations panel ──────────────────────────────────────── */
+.lw-grid{margin-top:14px}
+.lw-entry{border:1px solid #1e2840;border-radius:3px;margin-bottom:8px;overflow:hidden}
+.lw-entry-freq{background:#0d1525;border-bottom:1px solid #1e2840;padding:7px 12px;display:flex;align-items:baseline;gap:5px}
+.lw-fnum{font-size:17px;font-weight:700;color:#ff8833;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.lw-fnum-unit{font-size:10px;color:#5a7080;letter-spacing:.5px}
+.lw-station{padding:8px 12px;border-bottom:1px solid #0d1828}.lw-station:last-child{border-bottom:none}
+.lw-station-top{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:3px}
+.lw-sname{font-size:13px;font-weight:600;color:#c0ccd8}
+.lw-badge{font-size:10px;padding:1px 5px;border-radius:2px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.lw-badge-active{color:#33ff88;background:#33ff880d;border:1px solid #33ff8825}
+.lw-badge-ending{color:#ffc833;background:#ffc8330d;border:1px solid #ffc83325}
+.lw-badge-closed{color:#9aaabe;background:#9aaabe0d;border:1px solid #9aaabe25}
+.lw-badge-intermittent{color:#ff8833;background:#ff88330d;border:1px solid #ff883325}
+.lw-badge-signal{color:#44ccff;background:#44ccff0d;border:1px solid #44ccff25}
+.lw-smeta{font-size:11px;color:#5a7080;margin-bottom:4px}
+.lw-sdesc{font-size:12px;color:#7a8898;line-height:1.55}
+.lw-section-title{font-size:11px;color:#3a5060;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #1e2840}
+
 /* ── propagation panel ──────────────────────────────────────────────────── */
 .prop-section{margin-bottom:14px}
 .prop-section h3{font-size:14px;font-weight:600;color:#ffaa44;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
@@ -534,6 +553,19 @@ html.light .ant-best{color:#1155cc;background:#1155cc11;border-color:#1155cc33}
 html.light .ant-null-note{color:#cc7700;background:#cc770011;border-color:#cc770033}
 html.light .ant-pro{color:#007744}
 html.light .ant-con{color:#cc3300}
+html.light .lw-entry{border-color:#c8cdd8}
+html.light .lw-entry-freq{background:#e8ecf0;border-color:#c8cdd8}
+html.light .lw-fnum{color:#cc5500}
+html.light .lw-station{border-color:#e8ecf2}
+html.light .lw-sname{color:#2a3040}
+html.light .lw-smeta{color:#5a6878}
+html.light .lw-sdesc{color:#3a4558}
+html.light .lw-badge-active{color:#007744;background:#00774408;border-color:#00774425}
+html.light .lw-badge-ending{color:#aa7700;background:#aa770008;border-color:#aa770025}
+html.light .lw-badge-closed{color:#5a6878;background:#5a687808;border-color:#5a687825}
+html.light .lw-badge-intermittent{color:#cc5500;background:#cc550008;border-color:#cc550025}
+html.light .lw-badge-signal{color:#1155cc;background:#1155cc08;border-color:#1155cc25}
+html.light .lw-section-title{color:#8a9aae;border-color:#c8cdd8}
 
 /* propagation */
 html.light .prop-section h3{color:#cc7700}
@@ -789,6 +821,112 @@ const BANDS = [
       maxDist:'200 – 400 km (370 NM)',
       skip:'Slight — sky wave at night causes bearing errors (night effect); no true skip zone but signal distortion',
       desc:'Oldest electronic navaid still in service. Aircraft ADF receivers determine bearing to beacon. Being phased out in favour of GPS/VOR, but still used for instrument approaches.' },
+
+  { name:'Last Longwave Stations',
+    freq:'153 – 252 kHz',
+    wl:'1.2 – 2.0 km',
+    mod:'AM (DSB-FC)',
+    usage:'Surviving public broadcast stations worldwide, 2026',
+    prop:'Ground wave; reliable 1 000 – 2 000 km day and night',
+    maxDist:'1 000 – 2 000 km',
+    skip:'None — pure ground wave; no skip zone',
+    desc:'As of 2026, fewer than ten longwave broadcast stations remain worldwide. BBC Radio 4 (198 kHz) ends 27 Jun 2026. Polskie Radio PR1 (225 kHz, 1 000 kW) is Europe\'s most powerful active LW station. Mongolia\'s MNB runs four transmitters on +2 kHz non-standard offsets. Médi 1 (171 kHz, 2 000 kW) is the most powerful LW broadcast transmitter on Earth.',
+    html:
+      '<div class="lw-grid">' +
+      '<div class="lw-section-title">Surviving longwave broadcast stations &mdash; 2026</div>' +
+      /* 153 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">153</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">Radio Antena Satelor</span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Romania &nbsp;&#183;&nbsp; Bod transmitter, Bra&#537;ov &nbsp;&#183;&nbsp; 200 kW &nbsp;&#183;&nbsp; on air since 1950s</div>' +
+          '<div class="lw-sdesc">Romania\'s state broadcaster for rural audiences. The Bod transmitter uses a T-aerial on two 250 m guyed lattice masts. One of the last continuously active LW broadcast stations in Europe. No shutdown announced.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 162 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">162</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">France Inter</span><span class="lw-badge lw-badge-closed">Closed 31 Dec 2016</span></div>' +
+          '<div class="lw-smeta">France &nbsp;&#183;&nbsp; Allouis transmitter &nbsp;&#183;&nbsp; 2 000 kW peak &rarr; 250 kW &nbsp;&#183;&nbsp; 1952&ndash;2016</div>' +
+          '<div class="lw-sdesc">France\'s flagship national station on LW from October 1952. The Allouis transmitter ran at up to 2 000 kW before being reduced to 250 kW at closure. Shutdown saved approx. &euro;6 million/year.</div>' +
+        '</div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">ALS162 Time Signal</span><span class="lw-badge lw-badge-signal">Time signal only</span></div>' +
+          '<div class="lw-smeta">France &nbsp;&#183;&nbsp; Allouis &nbsp;&#183;&nbsp; 800 kW &nbsp;&#183;&nbsp; still active</div>' +
+          '<div class="lw-sdesc">The Allouis transmitter continues on 162 kHz carrying only the ALS162 precision time signal &mdash; not a broadcast service. Synchronises SNCF railways, the ENEDIS power grid, hospitals, airports and over 300 000 municipal systems across France.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 164 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">164</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">MNB Radio 1</span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Mongolia &nbsp;&#183;&nbsp; Ulaanbaatar &nbsp;&#183;&nbsp; 250 kW &nbsp;&#183;&nbsp; 22:00&ndash;15:00 UTC &nbsp;&#183;&nbsp; standard ITU channel: 162 kHz</div>' +
+          '<div class="lw-sdesc">Mongolia\'s national broadcaster uses +2 kHz non-standard offsets from ITU channels to avoid interference. The 259 m cable-stayed Ulaanbaatar mast is the main transmitter for the national service, covering vast territories with limited FM/DAB infrastructure.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 171 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">171</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">M&eacute;di 1</span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Morocco &nbsp;&#183;&nbsp; Nador, NE coast &nbsp;&#183;&nbsp; 2 000 kW &nbsp;&#183;&nbsp; on air since 1980</div>' +
+          '<div class="lw-sdesc">Founded as Radio M&eacute;diterran&eacute;e Internationale in 1980, a joint French&ndash;Moroccan venture. Three 380 m guyed masts at Nador. At 2 000 kW it is the <strong>most powerful broadcast transmitter on Earth</strong>. Targets North Africa, the Middle East and southern Europe in Arabic and French. No shutdown announced.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 198 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">198</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">BBC Radio 4</span><span class="lw-badge lw-badge-ending">Ending 27 Jun 2026</span></div>' +
+          '<div class="lw-smeta">United Kingdom &nbsp;&#183;&nbsp; Droitwich 500 kW &middot; Burghead 50 kW &middot; Westerglen 50 kW &nbsp;&#183;&nbsp; on LW since Nov 1978</div>' +
+          '<div class="lw-sdesc">Descended from the BBC National Programme (1930) and Home Service (1939&ndash;1967). Moved to 198 kHz in 1978 under the Geneva frequency plan. Carried the Shipping Forecast and served in the Royal Navy\'s letters-of-last-resort protocol &mdash; submarine commanders check for the 198 kHz carrier as confirmation of a functioning UK government. The Radio Teleswitch electricity-metering service co-carried on the LW signal ended 30 Jun 2025. <strong>Final broadcast: 27 June 2026.</strong></div>' +
+        '</div>' +
+      '</div>' +
+      /* 209 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">209</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">MNB Radio 1 &nbsp;<small style="font-weight:400;font-size:10px;color:inherit">(3 transmitters)</small></span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Mongolia &nbsp;&#183;&nbsp; Choibalsan 40 kW &middot; Dalanzadgad 40 kW &middot; &Ouml;lgii 30 kW &nbsp;&#183;&nbsp; 22:00&ndash;15:00 UTC &nbsp;&#183;&nbsp; standard ITU channel: 207 kHz</div>' +
+          '<div class="lw-sdesc">Three regional relay transmitters on the +2 kHz non-standard offset. Choibalsan serves eastern Mongolia, Dalanzadgad the Gobi Desert, and &Ouml;lgii the remote Bayan-&Ouml;lgii province in the far west. Together they extend MNB Radio 1 national coverage across 1.6 million km&sup2;.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 225 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">225</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">Polskie Radio Program 1</span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Poland &nbsp;&#183;&nbsp; Solec Kujawski, near Bydgoszcz &nbsp;&#183;&nbsp; 1 000 kW &nbsp;&#183;&nbsp; on LW since 1920s</div>' +
+          '<div class="lw-sdesc">Poland has broadcast on LW since the 1920s. The original site used the <strong>Warsaw Radio Mast</strong> at Konstant&oacute;w &mdash; at 646 m the tallest man-made structure ever built &mdash; until it collapsed on 8 August 1991. Solec Kujawski (masts: 330 m and 289 m) has operated since 1999. At 1 000 kW it is the <strong>most powerful active LW transmitter in continental Europe</strong>. No shutdown announced.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 227 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">227</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">MNB Radio 1</span><span class="lw-badge lw-badge-active">Active</span></div>' +
+          '<div class="lw-smeta">Mongolia &nbsp;&#183;&nbsp; Altai City, Govi-Altai Province &nbsp;&#183;&nbsp; 40 kW &nbsp;&#183;&nbsp; 22:00&ndash;15:00 UTC &nbsp;&#183;&nbsp; standard ITU channel: 225 kHz</div>' +
+          '<div class="lw-sdesc">Covers Mongolia\'s remote western highlands on the +2 kHz non-standard offset. Part of MNB\'s LW network ensuring national coverage of a country with fewer than 2 inhabitants per km&sup2;.</div>' +
+        '</div>' +
+      '</div>' +
+      /* 252 kHz */
+      '<div class="lw-entry">' +
+        '<div class="lw-entry-freq"><span class="lw-fnum">252</span><span class="lw-fnum-unit">kHz</span></div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">RT&Eacute; Radio 1</span><span class="lw-badge lw-badge-closed">Closed 15 Apr 2023</span></div>' +
+          '<div class="lw-smeta">Ireland &nbsp;&#183;&nbsp; Clarkstown, Co. Meath &nbsp;&#183;&nbsp; 150 kW (day) / 60 kW (night) &nbsp;&#183;&nbsp; 2004&ndash;2023</div>' +
+          '<div class="lw-sdesc">Formerly the frequency of <em>Atlantic 252</em>, a commercial pop station targeting the UK (1989&ndash;2001, 500 kW). RT&Eacute; Radio 1 took over in 2004 to serve the Irish diaspora in Britain and Northern Ireland. Survived near-closures in 2014&ndash;2015 due to public pressure from emigrant communities and GAA supporters. Final broadcast: 15 April 2023. The 248 m Clarkstown mast was demolished 27 July 2023.</div>' +
+        '</div>' +
+        '<div class="lw-station">' +
+          '<div class="lw-station-top"><span class="lw-sname">Alger Cha&icirc;ne 3</span><span class="lw-badge lw-badge-intermittent">Intermittent</span></div>' +
+          '<div class="lw-smeta">Algeria &nbsp;&#183;&nbsp; Tipaza, west of Algiers &nbsp;&#183;&nbsp; 1 500 kW (day) / 750 kW (night) &nbsp;&#183;&nbsp; 355 m mast</div>' +
+          '<div class="lw-sdesc">Algeria\'s French-language national broadcaster Channel 3. One of the world\'s most powerful LW transmitters when operating, with an irregular on/off history. At 1 500 kW it historically overwhelmed RT&Eacute;\'s co-channel 150 kW signal after dark, particularly on the southern Irish coast.</div>' +
+        '</div>' +
+      '</div>' +
+      '</div>'
+  },
   ]},
 
   /* ── MF ────────────────────────────────────────────────── */
@@ -3146,6 +3284,7 @@ function selectSub(band, sub, el) {
       (sub.skip ? row('Skip', sub.skip) : '') +
       row('Description', sub.desc) +
     '</table>' +
+    (sub.html || '') +
     waveVis(sub.wl, band.color) +
     buildWKF(band.id, sub.freq);
 }
