@@ -315,7 +315,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 
 /* ── broadcast panel ────────────────────────────────────────────────────── */
 .bc-controls{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap}
-.bc-controls label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#9aaabe;letter-spacing:.5px}
+.bc-controls .bc-label{font-size:11px;color:#9aaabe;letter-spacing:.5px;text-transform:uppercase}
 .bc-controls input,.bc-controls select{
   background:#0f1220;border:1px solid #1e2536;color:#c8ccd0;
   font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 8px;outline:none;
@@ -3590,14 +3590,11 @@ function openBroadcast() {
         '<label class="bc-label">Frequency (optional)</label>' +
         '<input id="bcFreq" class="bc-input" placeholder="e.g. 9410 · 14.074 · >7<=8 · >=9MHz<10MHz" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
       '</div>' +
-      '<div class="bc-row">' +
-        '<label class="bc-label">&nbsp;</label>' +
-        '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
-        '<label class="bc-now-wrap" title="Only show stations on air at the current synced UTC time">' +
-          '<span class="bc-now-toggle"><input type="checkbox" id="bcNow"' + (_bcNow ? ' checked' : '') + ' onchange="runBroadcast()"><span class="bc-now-slider"></span></span>' +
-          '<span class="bc-now-lbl">On Air Now</span>' +
-        '</label>' +
-      '</div>' +
+      '<label class="bc-now-wrap" title="Only show stations on air at the current synced UTC time">' +
+        '<span class="bc-now-toggle"><input type="checkbox" id="bcNow"' + (_bcNow ? ' checked' : '') + ' onchange="runBroadcast()"><span class="bc-now-slider"></span></span>' +
+        '<span class="bc-now-lbl">On Air Now</span>' +
+      '</label>' +
+      '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
     '</div>' +
     '<div id="bcResults" class="bc-results"></div>';
 }
