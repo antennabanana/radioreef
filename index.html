@@ -3700,38 +3700,69 @@ function _parseBcFreq(s) {
   if (!s) return null;
 
   if (/[><]/.test(s)) {
-    var re = /([><]=?)\s*([\d.]+)\s*([GMk]Hz)?/gi;
-    var bounds = [], m, anyUnit = false;
-    while ((m = re.exec(s)) !== null) {
-      var op = m[1], raw = parseFloat(m[2]);
-      if (isNaN(raw)) continue;
-      var unitStr = (m[3] || '').toLowerCase();
-      var hasUnit = !!m[3];
-      if (hasUnit) {
-        anyUnit = true;
-        var khz = unitStr.indexOf('g') === 0 ? raw * 1e6
-                : unitStr.indexOf('m') === 0 ? raw * 1000
-                : raw; /* kHz */
-        bounds.push({ op: op, khz: khz, hasUnit: true });
-      } else {
-        bounds.push({ op: op, val: raw, hasUnit: false });
+    /* Tokenise into operators and numbers-with-optional-units in document order */
+    var toks = [], tokRe = /([><]=?)|([\d.]+)\s*([GMkK]Hz)?/gi, m;
+    while ((m = tokRe.exec(s)) !== null) {
+      if (m[1]) {
+        toks.push({ type:'op', op: m[1] });
+      } else if (m[2] !== undefined) {
+        var uStr = (m[3] || '').toLowerCase();
+        var hasU = !!m[3];
+        var raw  = parseFloat(m[2]);
+        var khzV = hasU ? (uStr[0]==='g' ? raw*1e6 : uStr[0]==='m' ? raw*1000 : raw) : null;
+        toks.push({ type:'num', raw: raw, khz: khzV, hasUnit: hasU });
       }
     }
-    if (bounds.length) return { type: 'range', bounds: bounds, anyUnit: anyUnit };
+
+    /* Walk token sequence and build bounds on freq.
+       Two forms:
+         "op num"       →  freq op num  (standard)
+         "num op [num]" →  num op freq  →  freq flip(op) num
+                           if followed by another num, also:  freq op num2  (chained) */
+    var bounds = [], anyUnit = false;
+    var flip = { '>':'<', '>=':'<=', '<':'>', '<=':'>=' };
+
+    function pushB(op, tok) {
+      if (tok.hasUnit) { anyUnit = true; bounds.push({ op:op, khz:tok.khz, hasUnit:true  }); }
+      else             {                  bounds.push({ op:op, val:tok.raw, hasUnit:false }); }
+    }
+
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (t.type === 'op') {
+        /* "op num" — freq op num */
+        var nxt = toks[i + 1];
+        if (nxt && nxt.type === 'num') { pushB(t.op, nxt); i++; }
+      } else {
+        /* "num op ..." — num op freq  →  freq flip(op) num */
+        var nop = toks[i + 1];
+        if (nop && nop.type === 'op') {
+          pushB(flip[nop.op] || nop.op, t);
+          i++; /* consume the operator */
+          /* Chained: "num op num2" also means freq op num2 */
+          var n2 = toks[i + 1];
+          if (n2 && n2.type === 'num') { pushB(nop.op, n2); i++; }
+        }
+      }
+    }
+
+    if (bounds.length) return { type:'range', bounds:bounds, anyUnit:anyUnit };
   }
 
+  /* Exact with explicit unit: "9410kHz", "9.41MHz" */
   if (/[GMk]Hz/i.test(s)) {
     var k = _parseFreqToKhz(s);
-    if (k !== null) return { type: 'exact', khz: k };
+    if (k !== null) return { type:'exact', khz:k };
   }
 
+  /* Plain number or numeric prefix */
   var stripped = s.replace(/[^\d.]/g, '');
   if (!stripped) return null;
   if (stripped.indexOf('.') >= 0) {
     var n = parseFloat(stripped);
-    if (!isNaN(n)) return { type: 'prefix', prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
+    if (!isNaN(n)) return { type:'prefix', prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
   }
-  return { type: 'prefix', prefix: stripped };
+  return { type:'prefix', prefix: stripped };
 }
 
 /* Test entry freq (kHz) against a bounds array at a given unit scale.
