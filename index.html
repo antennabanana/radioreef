@@ -315,7 +315,7 @@ html.light .intro-sep{background:linear-gradient(90deg,transparent,#c0c8d4,trans
 
 /* ── broadcast panel ────────────────────────────────────────────────────── */
 .bc-controls{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap}
-.bc-controls label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#9aaabe;letter-spacing:.5px}
+.bc-controls .bc-label{font-size:11px;color:#9aaabe;letter-spacing:.5px;text-transform:uppercase}
 .bc-controls input,.bc-controls select{
   background:#0f1220;border:1px solid #1e2536;color:#c8ccd0;
   font-family:'JetBrains Mono',monospace;font-size:12px;padding:3px 8px;outline:none;
@@ -631,12 +631,21 @@ html.light .bottom-bar{background:#e6e8ee;border-top-color:#c8cdd8;color:#5a6878
 html.light .ripple{background:rgba(0,0,0,.08)}
 
 /* ── BC panel ── */
-.bc-row{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.bc-row{display:flex;flex-direction:column;gap:3px}
 .bc-label{font-size:11px;color:#9aaabe;letter-spacing:.5px;text-transform:uppercase}
 .bc-input{background:linear-gradient(180deg,#0d1020,#090c18);border:1px solid #1e2840;color:#c8ccd0;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;width:260px;max-width:100%;outline:none;transition:border-color .2s;border-radius:3px}
 .bc-input:focus{border-color:#ff8844}
 .bc-btn{padding:6px 18px;cursor:pointer;background:linear-gradient(180deg,#1a2c3a,#121e2c);border:1px solid #ff8844;color:#ff8844;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.5px;transition:background .2s,color .2s;border-radius:3px}
 .bc-btn:hover{background:linear-gradient(180deg,#22384a,#1a2c38);color:#ffaa66}
+.bc-now-wrap{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;margin-left:12px;vertical-align:middle}
+.bc-now-toggle{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
+.bc-now-toggle input{opacity:0;width:0;height:0;position:absolute}
+.bc-now-slider{position:absolute;cursor:pointer;inset:0;background:#111a28;border:1px solid #2e3850;border-radius:9px;transition:background .2s,border-color .2s}
+.bc-now-slider::before{content:'';position:absolute;height:12px;width:12px;left:2px;bottom:2px;background:#4a5a70;border-radius:50%;transition:transform .2s,background .2s}
+.bc-now-toggle input:checked + .bc-now-slider{background:#33ddcc1a;border-color:#33ddcc55}
+.bc-now-toggle input:checked + .bc-now-slider::before{background:#33ddcc;transform:translateX(14px)}
+.bc-now-lbl{font-size:12px;color:#7a8898;white-space:nowrap;transition:color .15s}
+.bc-now-wrap:hover .bc-now-lbl{color:#c0ccd8}
 .bc-results{margin-top:12px}
 .bc-empty{color:#6a7a8e;font-size:14px;padding:16px 0;letter-spacing:.5px}
 .bc-table{width:100%;border-collapse:collapse;margin-top:8px}
@@ -677,6 +686,12 @@ html.light .bc-help-body strong{color:#2a3040}
 html.light .bc-help-body code{color:#cc5500;background:#e8eaf0}
 html.light .bc-syntax td{border-bottom-color:#dde0e8}
 html.light .bc-syntax td:first-child{color:#cc5500}
+html.light .bc-now-slider{background:#dce0e8;border-color:#c8cdd8}
+html.light .bc-now-slider::before{background:#8a9aae}
+html.light .bc-now-toggle input:checked + .bc-now-slider{background:#00998718;border-color:#009987}
+html.light .bc-now-toggle input:checked + .bc-now-slider::before{background:#009987}
+html.light .bc-now-lbl{color:#5a6878}
+html.light .bc-now-wrap:hover .bc-now-lbl{color:#2a3040}
 
 /* ── CALC panel ── */
 .calc-panel{display:block}
@@ -3068,6 +3083,7 @@ let _timeOffset      = 0;    /* ms correction from HTTP time-sync */
 let _timeSyncSrc     = null; /* name of source that succeeded */
 let _timeSyncOk      = false;
 let _timeSyncTs      = null; /* Date of last sync */
+let _bcNow           = false; /* BC "On Air Now" toggle state */
 
 const $ = s => document.querySelector(s);
 
@@ -3338,10 +3354,65 @@ function formatTime(hhmm) {
 
 function formatDays(days) {
   if (!days || days === '' || days === '1234567') return 'Daily';
-  if (days === '12345') return 'Mon–Fri';
-  if (days === '67') return 'Sat–Sun';
-  var names = ['','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  return days.split('').map(function(d){ return names[parseInt(d)] || d; }).join(',');
+  if (days === '12345') return 'Mon\u2013Fri';
+  if (days === '67')    return 'Sat\u2013Sun';
+  /* pure digit string */
+  if (/^\d+$/.test(days)) {
+    var nums = ['\u2014','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    return days.split('').map(function(d){ return nums[+d] || d; }).join(', ');
+  }
+  /* named day abbreviation map */
+  var full = {Mo:'Mon',Tu:'Tue',We:'Wed',Th:'Thu',Fr:'Fri',Sa:'Sat',Su:'Sun'};
+  /* single named day "Mo" "Fr" etc. */
+  if (days.length === 2 && full[days]) return full[days];
+  /* named range "Mo-Fr" "Su-Th" etc. */
+  if (days.length === 5 && days[2] === '-') {
+    var a = full[days.slice(0,2)], b = full[days.slice(3,5)];
+    if (a && b) return a + '\u2013' + b;
+  }
+  /* two concatenated days "SaSu" */
+  if (days.length === 4) {
+    var d1 = full[days.slice(0,2)], d2 = full[days.slice(2,4)];
+    if (d1 && d2) return d1 + ', ' + d2;
+  }
+  /* irr / alt / date-specific — show raw */
+  return days;
+}
+
+/* ── On-Air-Now check for a single EIBI entry ───────────────
+   e = [freq, start_hhmm, end_hhmm, days, itu, station, lang, target]
+   Returns true if the station is currently on air based on synced UTC. */
+function _bcIsOnAir(e) {
+  var now   = new Date(Date.now() + _timeOffset);
+  var cur   = now.getUTCHours() * 100 + now.getUTCMinutes();
+  var start = e[1], end = e[2];
+  /* ── time window ── */
+  var onAir;
+  if (end === 2400) {
+    onAir = cur >= start;
+  } else if (start > end) { /* overnight wrap e.g. 2300–0100 */
+    onAir = cur >= start || cur < end;
+  } else {
+    onAir = cur >= start && cur < end;
+  }
+  if (!onAir) return false;
+  /* ── day check ── */
+  var days = e[3];
+  if (!days || days === '1234567') return true;
+  var jsDay = now.getUTCDay();
+  var d = jsDay === 0 ? 7 : jsDay; /* 1=Mon … 7=Sun */
+  if (/^\d+$/.test(days)) return days.indexOf(String(d)) !== -1;
+  var nm = {Mo:1,Tu:2,We:3,Th:4,Fr:5,Sa:6,Su:7};
+  if (days.length === 2 && nm[days] !== undefined) return nm[days] === d;
+  if (days.length === 5 && days[2] === '-') {
+    var s2 = nm[days.slice(0,2)], e2 = nm[days.slice(3,5)];
+    if (s2 && e2) return s2 <= e2 ? (d >= s2 && d <= e2) : (d >= s2 || d <= e2);
+  }
+  if (days.length === 4) {
+    var d1 = nm[days.slice(0,2)], d2 = nm[days.slice(2,4)];
+    if (d1 && d2) return d === d1 || d === d2;
+  }
+  return true; /* unknown format (irr, date-specific…) — include when uncertain */
 }
 
 function buildWKF(bandId, subFreq) {
@@ -3519,10 +3590,11 @@ function openBroadcast() {
         '<label class="bc-label">Frequency (optional)</label>' +
         '<input id="bcFreq" class="bc-input" placeholder="e.g. 9410 · 14.074 · >7<=8 · >=9MHz<10MHz" autocomplete="off" onkeydown="if(event.key===\'Enter\')runBroadcast()"/>' +
       '</div>' +
-      '<div class="bc-row">' +
-        '<label class="bc-label">&nbsp;</label>' +
-        '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
-      '</div>' +
+      '<label class="bc-now-wrap" title="Only show stations on air at the current synced UTC time">' +
+        '<span class="bc-now-toggle"><input type="checkbox" id="bcNow"' + (_bcNow ? ' checked' : '') + ' onchange="runBroadcast()"><span class="bc-now-slider"></span></span>' +
+        '<span class="bc-now-lbl">On Air Now</span>' +
+      '</label>' +
+      '<button class="bc-btn" onclick="runBroadcast()">&#9654; Find Broadcasts</button>' +
     '</div>' +
     '<div id="bcResults" class="bc-results"></div>';
 }
@@ -3549,7 +3621,9 @@ function runBroadcast() {
   var freqFilter = _parseBcFreq(freqInput);
 
   /* ── filter EIBI ── */
-  var targets = city ? city.targets : null;
+  var targets   = city ? city.targets : null;
+  var onAirNow  = !!(document.getElementById('bcNow') || {}).checked;
+  _bcNow = onAirNow;
   var filtered = EIBI.filter(function(e) {
     /* e = [freq_khz, start_hhmm, end_hhmm, days, itu, station, lang, target] */
     if (targets && !targets.some(function(t){ return e[7] === t; })) return false;
@@ -3570,26 +3644,31 @@ function runBroadcast() {
         }
       }
     }
+    if (onAirNow && !_bcIsOnAir(e)) return false;
     return true;
   });
 
   filtered.sort(function(a,b){ return a[0]-b[0]; });
 
-  /* No cap when a freq filter is active — the range/prefix naturally limits results.
-     Without any freq filter, cap at 200 to avoid rendering thousands of rows. */
-  var capped  = freqFilter === null && filtered.length > 200;
+  /* No cap when a freq filter or on-air-now filter is active */
+  var capped  = freqFilter === null && !onAirNow && filtered.length > 200;
   var limited = capped ? filtered.slice(0, 200) : filtered;
 
   if (!limited.length) {
     results.innerHTML = '<div class="bc-empty">No broadcasts found' +
+      (onAirNow ? ' <strong>on air right now</strong>' : '') +
       (city ? ' for <strong>' + city.name + '</strong>' : '') +
       (freqInput ? ' matching <strong>' + freqInput + '</strong>' : '') +
       '.</div>';
     return;
   }
 
-  var html = '<div class="bc-meta">Showing ' + limited.length + (capped ? ' of ' + filtered.length : '') +
-    ' broadcasts' + (city ? ' for <strong>' + city.name + '</strong>' : '') + '</div>';
+  var nowLabel = onAirNow
+    ? ' stations <strong style="color:' + tc('#33ff88') + '">on air now</strong>'
+    : ' broadcasts';
+  var html = '<div class="bc-meta">Showing ' + limited.length +
+    (capped ? ' of ' + filtered.length : '') + nowLabel +
+    (city ? ' for <strong>' + city.name + '</strong>' : '') + '</div>';
   html += '<table class="bc-table"><tr><th>Freq</th><th>Station</th><th>Lang</th><th>Time (UTC)</th><th>Days</th><th>ITU</th></tr>';
   limited.forEach(function(e) {
     html += '<tr><td class="bc-freq">' + fmtFreqKhz(e[0]) + '</td><td>' + e[5] +
@@ -3621,38 +3700,69 @@ function _parseBcFreq(s) {
   if (!s) return null;
 
   if (/[><]/.test(s)) {
-    var re = /([><]=?)\s*([\d.]+)\s*([GMk]Hz)?/gi;
-    var bounds = [], m, anyUnit = false;
-    while ((m = re.exec(s)) !== null) {
-      var op = m[1], raw = parseFloat(m[2]);
-      if (isNaN(raw)) continue;
-      var unitStr = (m[3] || '').toLowerCase();
-      var hasUnit = !!m[3];
-      if (hasUnit) {
-        anyUnit = true;
-        var khz = unitStr.indexOf('g') === 0 ? raw * 1e6
-                : unitStr.indexOf('m') === 0 ? raw * 1000
-                : raw; /* kHz */
-        bounds.push({ op: op, khz: khz, hasUnit: true });
-      } else {
-        bounds.push({ op: op, val: raw, hasUnit: false });
+    /* Tokenise into operators and numbers-with-optional-units in document order */
+    var toks = [], tokRe = /([><]=?)|([\d.]+)\s*([GMkK]Hz)?/gi, m;
+    while ((m = tokRe.exec(s)) !== null) {
+      if (m[1]) {
+        toks.push({ type:'op', op: m[1] });
+      } else if (m[2] !== undefined) {
+        var uStr = (m[3] || '').toLowerCase();
+        var hasU = !!m[3];
+        var raw  = parseFloat(m[2]);
+        var khzV = hasU ? (uStr[0]==='g' ? raw*1e6 : uStr[0]==='m' ? raw*1000 : raw) : null;
+        toks.push({ type:'num', raw: raw, khz: khzV, hasUnit: hasU });
       }
     }
-    if (bounds.length) return { type: 'range', bounds: bounds, anyUnit: anyUnit };
+
+    /* Walk token sequence and build bounds on freq.
+       Two forms:
+         "op num"       →  freq op num  (standard)
+         "num op [num]" →  num op freq  →  freq flip(op) num
+                           if followed by another num, also:  freq op num2  (chained) */
+    var bounds = [], anyUnit = false;
+    var flip = { '>':'<', '>=':'<=', '<':'>', '<=':'>=' };
+
+    function pushB(op, tok) {
+      if (tok.hasUnit) { anyUnit = true; bounds.push({ op:op, khz:tok.khz, hasUnit:true  }); }
+      else             {                  bounds.push({ op:op, val:tok.raw, hasUnit:false }); }
+    }
+
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (t.type === 'op') {
+        /* "op num" — freq op num */
+        var nxt = toks[i + 1];
+        if (nxt && nxt.type === 'num') { pushB(t.op, nxt); i++; }
+      } else {
+        /* "num op ..." — num op freq  →  freq flip(op) num */
+        var nop = toks[i + 1];
+        if (nop && nop.type === 'op') {
+          pushB(flip[nop.op] || nop.op, t);
+          i++; /* consume the operator */
+          /* Chained: "num op num2" also means freq op num2 */
+          var n2 = toks[i + 1];
+          if (n2 && n2.type === 'num') { pushB(nop.op, n2); i++; }
+        }
+      }
+    }
+
+    if (bounds.length) return { type:'range', bounds:bounds, anyUnit:anyUnit };
   }
 
+  /* Exact with explicit unit: "9410kHz", "9.41MHz" */
   if (/[GMk]Hz/i.test(s)) {
     var k = _parseFreqToKhz(s);
-    if (k !== null) return { type: 'exact', khz: k };
+    if (k !== null) return { type:'exact', khz:k };
   }
 
+  /* Plain number or numeric prefix */
   var stripped = s.replace(/[^\d.]/g, '');
   if (!stripped) return null;
   if (stripped.indexOf('.') >= 0) {
     var n = parseFloat(stripped);
-    if (!isNaN(n)) return { type: 'prefix', prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
+    if (!isNaN(n)) return { type:'prefix', prefix: String(n < 30 ? Math.round(n * 1000) : Math.round(n)) };
   }
-  return { type: 'prefix', prefix: stripped };
+  return { type:'prefix', prefix: stripped };
 }
 
 /* Test entry freq (kHz) against a bounds array at a given unit scale.
