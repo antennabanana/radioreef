@@ -4555,24 +4555,51 @@ function _timeFmtOff(mins) {
    });
  }
 
- function _timeSyncFromList() {
-   var i = 0;
-   function tryNext() {
-     if (i >= NTP_SOURCES.length) {
-       _updateTimeSyncUI();   /* all failed — show pending */
-       return;
-     }
-     var src = NTP_SOURCES[i++];
-     _timeSyncOne(src).then(function(result) {
-       _timeOffset  = result.offset;
-       _timeSyncSrc = result.name;
-       _timeSyncOk  = true;
-       _timeSyncTs  = new Date();
-       _updateTimeSyncUI();
-     }).catch(function() { tryNext(); });
-   }
-   tryNext();
- }
+/* Offsets may be outliers from broken CDNs/proxies (e.g. timeapi.io
+     returning a time ~23 min behind). Don't trust a single source:
+     measure all of them, take the MEDIAN, and drop lone crazy values. */
+  function _chooseTimeSync(results) {
+    if (!results.length) return null;
+    var offs = results.map(function(r) { return r.offset; })
+                      .sort(function(a, b) { return a - b; });
+    var n = offs.length;
+    var median = (n % 2 === 1) ? offs[(n - 1) / 2]
+                               : Math.round((offs[n / 2 - 1] + offs[n / 2]) / 2);
+    var MAX_ONE = 5 * 60 * 1000;   /* a lone source off by >5 min is suspect */
+    if (n === 1 && Math.abs(offs[0]) > MAX_ONE) return null;
+    /* name the source whose reading sits closest to the median */
+    var best = null, bestD = Infinity;
+    for (var j = 0; j < results.length; j++) {
+      var d = Math.abs(results[j].offset - median);
+      if (d < bestD) { bestD = d; best = results[j]; }
+    }
+    return { name: best.name, offset: median };
+  }
+
+  function _timeSyncFromList() {
+    var pending = NTP_SOURCES.length;
+    var results = [];
+    var done = false;
+    function settle() {
+      if (done) return;
+      if (--pending > 0) return;
+      done = true;
+      var chosen = _chooseTimeSync(results);
+      if (chosen) {
+        _timeOffset  = chosen.offset;
+        _timeSyncSrc = chosen.name;
+        _timeSyncOk  = true;
+        _timeSyncTs  = new Date();
+      }
+      _updateTimeSyncUI();
+    }
+    for (var k = 0; k < NTP_SOURCES.length; k++) {
+      _timeSyncOne(NTP_SOURCES[k]).then(function(r) {
+        results.push(r);
+        settle();
+      }, function() { settle(); });
+    }
+  }
 
  function _updateTimeSyncUI() {
    var el = document.getElementById('timeSyncStatus');
